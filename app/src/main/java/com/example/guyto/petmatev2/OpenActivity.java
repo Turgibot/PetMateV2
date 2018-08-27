@@ -10,9 +10,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class OpenActivity extends AppCompatActivity {
-    private Button fbTest;
-    private DatabaseReference mDatabase;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,16 +32,3 @@ public class OpenActivity extends AppCompatActivity {
         }).start();
     }
 }
-//fbTest = (Button)findViewById(R.id.testBtn);
-//        mDatabase = FirebaseDatabase.getInstance().getReference();
-//
-//        fbTest.setOnClickListener(new View.OnClickListener() {
-//@Override
-//public void onClick(View view) {
-//        //1 create a child
-//        //2 assign value to the child
-//
-//        mDatabase.child("name").setValue("Guy");
-//
-//        }
-//        });

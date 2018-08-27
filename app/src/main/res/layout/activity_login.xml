@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/welcome" />
 
-    <TextView
+    <EditText
         android:id="@+id/login_email"
         android:layout_width="340dp"
         android:layout_height="50dp"
@@ -36,12 +36,21 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="200dp"
         android:background="@drawable/email"
+        android:hint="@string/email_address"
+        android:inputType="textEmailAddress"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingEnd="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/new_acnt_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <EditText
         android:id="@+id/login_pass"
         android:layout_width="340dp"
         android:layout_height="51dp"
@@ -51,6 +60,15 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/pwd_edit"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingEnd="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_email" />
