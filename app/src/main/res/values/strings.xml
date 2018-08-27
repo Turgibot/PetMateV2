@@ -13,4 +13,10 @@
     <string name="lookingfoe">lookingfoe</string>
     <string name="purpose">purpose</string>
     <string name="area">area</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email_address">Email Address</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="password">Password</string>
+    <string name="repeat_password">Repeat Password</string>
 </resources>

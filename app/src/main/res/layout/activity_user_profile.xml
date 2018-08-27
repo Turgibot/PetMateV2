@@ -49,7 +49,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/user_prof_edit_acnt" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -59,18 +59,20 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/empty_edit"
+        android:hint="@string/last_name"
         android:inputType="text"
-        android:text="asdsad"
+        android:paddingLeft="8sp"
+        android:paddingRight="8sp"
+        android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        android:paddingTop="8sp"
-        android:paddingLeft="8sp"
         app:layout_constraintBottom_toTopOf="@+id/textView11"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView7" />
+        app:layout_constraintTop_toBottomOf="@+id/textView7"
+        android:paddingStart="8sp" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView11"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -80,20 +82,21 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/email"
+        android:hint="@string/email_address"
         android:inputType="textEmailAddress"
         android:paddingLeft="60sp"
         android:paddingRight="60sp"
         android:paddingStart="60sp"
-        android:text="dasda"
+        android:paddingEnd="60sp"
+        android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        android:paddingTop="8sp"
         app:layout_constraintBottom_toTopOf="@+id/textView10"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView10"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -103,12 +106,13 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/phone"
+        android:hint="@string/phone_number"
         android:inputType="phone"
         android:paddingLeft="60sp"
         android:paddingRight="60sp"
         android:paddingStart="60sp"
+        android:paddingEnd="60sp"
         android:paddingTop="8sp"
-        android:text="asd"
         android:textColor="@color/black"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/textView9"
@@ -116,7 +120,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView11" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView9"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -126,12 +130,13 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/pwd_edit"
+        android:hint="@string/password"
         android:inputType="textPassword"
         android:paddingLeft="60sp"
-        android:paddingTop="8sp"
         android:paddingRight="60sp"
         android:paddingStart="60sp"
-        android:text="dasdasd"
+        android:paddingEnd="60sp"
+        android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/textView8"
@@ -139,7 +144,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView8"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -149,12 +154,13 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/pwd_edit"
+        android:hint="@string/repeat_password"
         android:inputType="textPassword"
-        android:paddingTop="8sp"
         android:paddingLeft="60sp"
         android:paddingRight="60sp"
         android:paddingStart="60sp"
-        android:text="asdasd"
+        android:paddingEnd="60sp"
+        android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/button8"
@@ -162,7 +168,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
-    <TextView
+    <EditText
         android:id="@+id/textView7"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -172,14 +178,16 @@
         android:layout_marginRight="22dp"
         android:layout_marginStart="22dp"
         android:background="@drawable/empty_edit"
+        android:hint="@string/first_name"
         android:inputType="text"
-        android:text="test"
+        android:paddingLeft="8sp"
+        android:paddingRight="8sp"
+        android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        android:paddingTop="8sp"
-        android:paddingLeft="8sp"
         app:layout_constraintBottom_toTopOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView17" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView17"
+        android:paddingStart="8sp" />
 </android.support.constraint.ConstraintLayout>
