@@ -3,4 +3,8 @@
     <string name="welcome">welcome</string>
     <string name="big_frame">big_frame</string>
     <string name="pet_mate_header">pet_mate_header</string>
+    <string name="my_pet_profile">my_pet_profile</string>
+    <string name="med_frame">med_frame</string>
+    <string name="slogan">slogan</string>
+    <string name="pets">pets</string>
 </resources>
