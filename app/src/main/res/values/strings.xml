@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PetMateV2</string>
+    <string name="welcome">welcome</string>
 </resources>
