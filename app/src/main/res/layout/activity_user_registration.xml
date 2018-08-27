@@ -9,9 +9,10 @@
     tools:layout_editor_absoluteY="25dp">
 
     <EditText
-        android:id="@+id/textView13"
-        android:layout_width="367dp"
+        android:id="@+id/lastNameView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/empty_edit"
         android:hint="@string/last_name"
         android:inputType="text"
@@ -21,15 +22,17 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView15"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView15"
-        tools:layout_editor_absoluteY="242dp" />
+        app:layout_constraintBottom_toTopOf="@+id/phoneView"
+        app:layout_constraintEnd_toEndOf="@+id/phoneView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/phoneView"
+        app:layout_constraintTop_toBottomOf="@+id/firstNameView" />
 
     <EditText
-        android:id="@+id/textView14"
-        android:layout_width="367dp"
+        android:id="@+id/emailView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="9dp"
         android:background="@drawable/email"
         android:hint="@string/email_address"
         android:inputType="textEmailAddress"
@@ -40,15 +43,16 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView16"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView16"
-        tools:layout_editor_absoluteY="366dp" />
+        app:layout_constraintBottom_toTopOf="@+id/passView"
+        app:layout_constraintEnd_toEndOf="@+id/passView"
+        app:layout_constraintStart_toStartOf="@+id/passView"
+        app:layout_constraintTop_toBottomOf="@+id/phoneView" />
 
     <EditText
-        android:id="@+id/textView15"
-        android:layout_width="367dp"
+        android:id="@+id/phoneView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="9dp"
         android:background="@drawable/phone"
         android:hint="@string/phone_number"
         android:inputType="phone"
@@ -59,15 +63,17 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView14"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView14"
-        tools:layout_editor_absoluteY="305dp" />
+        app:layout_constraintBottom_toTopOf="@+id/emailView"
+        app:layout_constraintEnd_toEndOf="@+id/emailView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/emailView"
+        app:layout_constraintTop_toBottomOf="@+id/lastNameView" />
 
     <EditText
-        android:id="@+id/textView16"
-        android:layout_width="367dp"
+        android:id="@+id/passView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/pwd_edit"
         android:hint="@string/password"
         android:inputType="textPassword"
@@ -78,15 +84,17 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView17"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView17"
-        tools:layout_editor_absoluteY="429dp" />
+        app:layout_constraintBottom_toTopOf="@+id/passRepeatView"
+        app:layout_constraintEnd_toEndOf="@+id/passRepeatView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/passRepeatView"
+        app:layout_constraintTop_toBottomOf="@+id/emailView" />
 
     <EditText
-        android:id="@+id/textView17"
-        android:layout_width="367dp"
+        android:id="@+id/passRepeatView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="23dp"
         android:background="@drawable/pwd_edit"
         android:hint="@string/repeat_password"
         android:inputType="textPassword"
@@ -97,15 +105,16 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/button16"
-        app:layout_constraintHorizontal_bias="0.481"
-        app:layout_constraintStart_toStartOf="@+id/button16"
-        tools:layout_editor_absoluteY="489dp" />
+        app:layout_constraintBottom_toTopOf="@+id/startUseBtn"
+        app:layout_constraintEnd_toEndOf="@+id/startUseBtn"
+        app:layout_constraintStart_toStartOf="@+id/startUseBtn"
+        app:layout_constraintTop_toBottomOf="@+id/passView" />
 
     <EditText
-        android:id="@+id/textView18"
-        android:layout_width="367dp"
+        android:id="@+id/firstNameView"
+        android:layout_width="340dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="9dp"
         android:background="@drawable/empty_edit"
         android:hint="@string/first_name"
         android:inputType="text"
@@ -115,25 +124,40 @@
         android:paddingTop="8sp"
         android:textColor="@color/black"
         android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView13"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textView13"
-        tools:layout_editor_absoluteY="178dp" />
+        app:layout_constraintBottom_toTopOf="@+id/lastNameView"
+        app:layout_constraintEnd_toEndOf="@+id/lastNameView"
+        app:layout_constraintStart_toStartOf="@+id/lastNameView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView19" />
 
     <ImageView
         android:id="@+id/imageView19"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@+id/textView18"
-        app:layout_constraintStart_toStartOf="@+id/textView18"
-        app:srcCompat="@drawable/create_a_new_account"
-        tools:layout_editor_absoluteY="35dp" />
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="6dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/startusing"
+        app:layout_constraintBottom_toTopOf="@+id/firstNameView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/create_a_new_account" />
 
     <Button
-        android:id="@+id/button16"
-        android:layout_width="340dp"
-        android:layout_height="50dp"
+        android:id="@+id/startUseBtn"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:background="@drawable/start_account_btn"
-        tools:layout_editor_absoluteX="35dp"
-        tools:layout_editor_absoluteY="593dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passRepeatView" />
 </android.support.constraint.ConstraintLayout>

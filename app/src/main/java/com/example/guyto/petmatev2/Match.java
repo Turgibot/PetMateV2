@@ -1,3 +1,5 @@
+package com.example.guyto.petmatev2;
+
 import java.util.Date;
 
 public class Match {

@@ -1,3 +1,5 @@
+package com.example.guyto.petmatev2;
+
 public class Pet {
     private String name;
     private String type;

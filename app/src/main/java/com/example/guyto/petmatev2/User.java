@@ -1,3 +1,8 @@
+package com.example.guyto.petmatev2;
+
+import com.example.guyto.petmatev2.Match;
+import com.example.guyto.petmatev2.Pet;
+
 import java.util.List;
 
 public class User {
