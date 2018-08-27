@@ -4,6 +4,136 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UserRegistrationActivity">
+    android:background="@color/colorMainLight"
+    tools:context=".UserRegistrationActivity"
+    tools:layout_editor_absoluteY="25dp">
 
+    <EditText
+        android:id="@+id/textView13"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/empty_edit"
+        android:hint="@string/last_name"
+        android:inputType="text"
+        android:paddingLeft="8sp"
+        android:paddingRight="8sp"
+        android:paddingStart="8sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView15"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textView15"
+        tools:layout_editor_absoluteY="242dp" />
+
+    <EditText
+        android:id="@+id/textView14"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/email"
+        android:hint="@string/email_address"
+        android:inputType="textEmailAddress"
+        android:paddingEnd="60sp"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView16"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textView16"
+        tools:layout_editor_absoluteY="366dp" />
+
+    <EditText
+        android:id="@+id/textView15"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/phone"
+        android:hint="@string/phone_number"
+        android:inputType="phone"
+        android:paddingEnd="60sp"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView14"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textView14"
+        tools:layout_editor_absoluteY="305dp" />
+
+    <EditText
+        android:id="@+id/textView16"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/pwd_edit"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:paddingEnd="60sp"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView17"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textView17"
+        tools:layout_editor_absoluteY="429dp" />
+
+    <EditText
+        android:id="@+id/textView17"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/pwd_edit"
+        android:hint="@string/repeat_password"
+        android:inputType="textPassword"
+        android:paddingEnd="60sp"
+        android:paddingLeft="60sp"
+        android:paddingRight="60sp"
+        android:paddingStart="60sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/button16"
+        app:layout_constraintHorizontal_bias="0.481"
+        app:layout_constraintStart_toStartOf="@+id/button16"
+        tools:layout_editor_absoluteY="489dp" />
+
+    <EditText
+        android:id="@+id/textView18"
+        android:layout_width="367dp"
+        android:layout_height="0dp"
+        android:background="@drawable/empty_edit"
+        android:hint="@string/first_name"
+        android:inputType="text"
+        android:paddingLeft="8sp"
+        android:paddingRight="8sp"
+        android:paddingStart="8sp"
+        android:paddingTop="8sp"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/textView13"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textView13"
+        tools:layout_editor_absoluteY="178dp" />
+
+    <ImageView
+        android:id="@+id/imageView19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@+id/textView18"
+        app:layout_constraintStart_toStartOf="@+id/textView18"
+        app:srcCompat="@drawable/create_a_new_account"
+        tools:layout_editor_absoluteY="35dp" />
+
+    <Button
+        android:id="@+id/button16"
+        android:layout_width="340dp"
+        android:layout_height="50dp"
+        android:background="@drawable/start_account_btn"
+        tools:layout_editor_absoluteX="35dp"
+        tools:layout_editor_absoluteY="593dp" />
 </android.support.constraint.ConstraintLayout>
