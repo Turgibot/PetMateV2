@@ -16,6 +16,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".UserProfileActivity" />
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".UserRegistrationActivity" />
+        <activity android:name=".MyPetsActivity" />
+        <activity android:name=".PetProfileActivity" />
+        <activity android:name=".MyMatchesActivity" />
+        <activity android:name=".MatchFinderActivity"></activity>
     </application>
 
 </manifest>
