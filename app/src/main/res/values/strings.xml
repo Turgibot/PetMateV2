@@ -10,7 +10,7 @@
     <string name="name">name</string>
     <string name="type">type</string>
     <string name="gender">gender</string>
-    <string name="lookingfoe">lookingfoe</string>
+    <string name="lookingfoe">lookingfor</string>
     <string name="purpose">purpose</string>
     <string name="area">area</string>
     <string name="first_name">First Name</string>
@@ -29,10 +29,17 @@
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
+    <string name="error_no_legal_password">Must contain character and digits combined</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="error_invalid_format">input format error</string>
+    <string name="error_matched_passwords">passwords do not match</string>
+    <string name="error_invalid_length">phone format example 053-123-1234</string>
     <string name="startusing">startusing</string>
+    <string name="users">Users</string>
+    <string name="preference_file_key">com.guy.petmatev2.2018</string>
+
 </resources>
