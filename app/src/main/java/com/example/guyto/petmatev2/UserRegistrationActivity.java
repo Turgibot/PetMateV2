@@ -25,7 +25,7 @@ import com.google.firebase.database.FirebaseDatabase;
 public class UserRegistrationActivity extends AppCompatActivity {
 
     private DatabaseReference mdatabase;
-    private FirebaseAuth mAuth;
+    private FirebaseDatabase firebase;
     private EditText mFirstNameView;
     private EditText mLastNameView;
     private EditText mPhoneView;
@@ -41,7 +41,6 @@ public class UserRegistrationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_registration);
         mdatabase = FirebaseDatabase.getInstance().getReference();
-        mAuth = FirebaseAuth.getInstance();
         mFirstNameView = (EditText) findViewById(R.id.firstNameView);
         mLastNameView = (EditText) findViewById(R.id.lastNameView);
         mPhoneView = (EditText) findViewById(R.id.phoneView);
@@ -50,36 +49,47 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mPasswordRepeatView = (EditText) findViewById(R.id.passRepeatView);
         mStartUseBtn = (Button) findViewById(R.id.startUseBtn);
         mFirstNameView.requestFocus();
-        mStartUseBtn.setOnClickListener(new View.OnClickListener() {
+        firebase = FirebaseDatabase.getInstance();
 
+
+
+
+
+        mStartUseBtn.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View view) {
                 if (isValidRegistration()){
                     User u = new User(fname, lname,email,password,phone,null,null);
-
-                    mdatabase.child(getString(R.string.users)).push().setValue(u).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
-                                Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
-                                SharedPreferences sharedPreferences = getSharedPreferences(
-                                        getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putString("UserName", fname+""+lname);
-                                editor.putString("Phone", phone);
-                                editor.commit();
-
-                                Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
-                            else {
-                                Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    });
+                    try {
+                        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference(getString(R.string.users)).child(email);
+                        usersDB.child(getString(R.string.users)).child(email).push().setValue(u);
+                    }catch(Exception e){
+                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
+                    }
+//                    mdatabase.child(getString(R.string.users)).push().setValue(u).addOnCompleteListener(new OnCompleteListener<Void>() {
+//
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            if(task.isSuccessful()){
+//                                Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
+//                                SharedPreferences sharedPreferences = getSharedPreferences(
+//                                        getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+//
+//                                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                                editor.putString("UserName", fname+""+lname);
+//                                editor.putString("Phone", phone);
+//                                editor.commit();
+//
+//                                Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
+//                                startActivity(intent);
+//                                finish();
+//                            }
+//                            else {
+//                                Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    });
                 }
 
                 //mAuth.createUserWithEmailAndPassword("guy", "123456");
