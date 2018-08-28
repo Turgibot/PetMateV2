@@ -1,5 +1,6 @@
 package com.example.guyto.petmatev2;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -26,7 +27,15 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordView = (EditText) findViewById(R.id.login_pass);
         login_btn = (Button) findViewById(R.id.login_btn);
         acnt_btn = (Button) findViewById(R.id.new_acnt_btn);
-        
+
+        acnt_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, UserRegistrationActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 //fbTest = (Button)findViewById(R.id.testBtn);
 //        mDatabase = FirebaseDatabase.getInstance().getReference();

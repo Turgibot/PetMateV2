@@ -33,7 +33,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mPasswordView = (EditText) findViewById(R.id.passView);
         mPasswordRepeatView = (EditText) findViewById(R.id.passRepeatView);
         mStartUseBtn = (Button) findViewById(R.id.startUseBtn);
-        
+
     }
 
 
