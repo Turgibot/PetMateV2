@@ -8,21 +8,31 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity {
-    private DatabaseReference mdatabase;
-    private EditText mEmailView;
+    private FirebaseAuth mAuth;    private EditText mEmailView;
     private EditText mPasswordView;
     private Button login_btn;
     private Button acnt_btn;
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null){
+            //goToMyPets();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        mdatabase = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
         mEmailView = (EditText) findViewById(R.id.login_email);
         mPasswordView = (EditText) findViewById(R.id.login_pass);
         login_btn = (Button) findViewById(R.id.login_btn);
@@ -37,19 +47,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-//fbTest = (Button)findViewById(R.id.testBtn);
-//        mDatabase = FirebaseDatabase.getInstance().getReference();
-//
-//        fbTest.setOnClickListener(new View.OnClickListener() {
-//@Override
-//public void onClick(View view) {
-//        //1 create a child
-//        //2 assign value to the child
-//
-//        mDatabase.child("name").setValue("Guy");
-//
-//        }
-//        });
 
     private void attemptLogin() {
 

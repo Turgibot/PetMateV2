@@ -1,5 +1,6 @@
 package com.example.guyto.petmatev2;
 
+import android.animation.TypeConverter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,12 +20,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.security.MessageDigest;
+
 public class UserRegistrationActivity extends AppCompatActivity {
 
-    private DatabaseReference mdatabase;
+    private FirebaseAuth mAuth;
     private FirebaseDatabase firebase;
     private EditText mFirstNameView;
     private EditText mLastNameView;
@@ -33,14 +37,16 @@ public class UserRegistrationActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private EditText mPasswordRepeatView;
     private Button mStartUseBtn;
-    private String email, passRepeat, password, fname ,lname, phone;
-    private static final String TAG = "EmailPassword";
+    private String email, passRepeat, password, fname ,lname, phone, emailHash;
+    private User u;
+    private boolean debug = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_registration);
-        mdatabase = FirebaseDatabase.getInstance().getReference();
+        firebase = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         mFirstNameView = (EditText) findViewById(R.id.firstNameView);
         mLastNameView = (EditText) findViewById(R.id.lastNameView);
         mPhoneView = (EditText) findViewById(R.id.phoneView);
@@ -49,7 +55,6 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mPasswordRepeatView = (EditText) findViewById(R.id.passRepeatView);
         mStartUseBtn = (Button) findViewById(R.id.startUseBtn);
         mFirstNameView.requestFocus();
-        firebase = FirebaseDatabase.getInstance();
 
 
 
@@ -60,82 +65,28 @@ public class UserRegistrationActivity extends AppCompatActivity {
 
             public void onClick(View view) {
                 if (isValidRegistration()){
-                    User u = new User(fname, lname,email,password,phone,null,null);
                     try {
-                        DatabaseReference usersDB = FirebaseDatabase.getInstance().getReference(getString(R.string.users)).child(email);
-                        usersDB.child(getString(R.string.users)).child(email).push().setValue(u);
-                    }catch(Exception e){
-                        Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_LONG).show();
-                    }
-//                    mdatabase.child(getString(R.string.users)).push().setValue(u).addOnCompleteListener(new OnCompleteListener<Void>() {
-//
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            if(task.isSuccessful()){
-//                                Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
-//                                SharedPreferences sharedPreferences = getSharedPreferences(
-//                                        getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-//
-//                                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                                editor.putString("UserName", fname+""+lname);
-//                                editor.putString("Phone", phone);
-//                                editor.commit();
-//
-//                                Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
-//                                startActivity(intent);
-//                                finish();
-//                            }
-//                            else {
-//                                Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
-//                            }
-//                        }
-//                    });
-                }
+                        u = new User(fname, lname, email, password, phone,null,null);
+                        emailHash = sha256(email);
+                        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()){
+                                    registerUser();
+                                }else{
+                                    Toast.makeText(getApplicationContext(),"Authentication incomplete", Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        });
 
-                //mAuth.createUserWithEmailAndPassword("guy", "123456");
+                    }catch(Exception e){
+                        Toast.makeText(getApplicationContext(),"Authentication sha: "+sha256(email)+"-----"+ e.toString(), Toast.LENGTH_LONG).show();
+                    }
+                }
             }
         });
     }
-//                mAuth.createUserWithEmailAndPassword("guy@guy.com", "12345678")
-//                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-//
-//                            @Override
-//                            public void onComplete(@NonNull Task<AuthResult> task) {
-//                                String m = task.getException().toString();
-//                                if (task.isSuccessful()) {
-//                                    // Sign in success, update UI with the signed-in user's information
-//                                    Log.d(TAG, "createUserWithEmail:success");
-//                                    FirebaseUser user = mAuth.getCurrentUser();
-//                                    updateUI(user);
-//                                } else {
-//                                    // If sign in fails, display a message to the user.
-//                                    Log.w(TAG, "createUserWithEmail:failure", task.getException());
-//                                    Toast.makeText(getApplicationContext(), "Authentication failed.",
-//                                            Toast.LENGTH_SHORT).show();
-//                                    updateUI(null);
-//                                }
-//                            }
-//                        });
 
-//            }
-//        });
-//    }
-
-
-    //fbTest = (Button)findViewById(R.id.testBtn);
-//        mDatabase = FirebaseDatabase.getInstance().getReference();
-//
-//        fbTest.setOnClickListener(new View.OnClickListener() {
-//@Override
-//public void onClick(View view) {
-//        //1 create a child
-//        //2 assign value to the child
-//
-//        mDatabase.child("name").setValue("Guy");
-//
-//        }
-//        });
-    private void updateUI(FirebaseUser user) {}
     private boolean isValidRegistration() {
         resetError();
         // Store values at the time of the login attempt.
@@ -294,4 +245,55 @@ public class UserRegistrationActivity extends AppCompatActivity {
         }
         return true;
     }
+
+    public  String sha256(String base) {
+        try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(base.getBytes("UTF-8"));
+            StringBuffer hexString = new StringBuffer();
+
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if(hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch(Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    private void registerUser(){
+        try {
+            DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(emailHash);
+            usersDB.setValue(u).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
+                        SharedPreferences sharedPreferences = getSharedPreferences(
+                                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("UserName", fname + "" + lname);
+                        editor.putString("Phone", phone);
+                        editor.apply();
+                        goToMyPets();
+
+                    } else {
+                        Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }catch(Exception e){
+            Toast.makeText(getApplicationContext(),"Registration sha: "+sha256(email)+"-----"+ e.toString(), Toast.LENGTH_LONG).show();
+        }
+    }
+    private void goToMyPets(){
+        Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
 }
