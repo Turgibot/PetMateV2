@@ -5,7 +5,11 @@ import com.example.guyto.petmatev2.Pet;
 
 import java.util.List;
 
+
 public class User {
+
+    private static User singletonUser;
+
     private String firstName;
     private String lastName;
     private String email;
@@ -15,7 +19,23 @@ public class User {
     private List<Match> matches;
 
 
-    public User(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Match> matches) {
+
+    private User(){
+        this.firstName = "";
+        this.lastName = "";
+        this.email = "";
+        this.password = "";
+        this.phone = "";
+        this.pets = null;
+        this.matches = null;
+    }
+    public static User getInstance(){
+        if(singletonUser == null){
+            singletonUser = new User();
+        }
+        return singletonUser;
+    }
+    public void instantiate(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Match> matches) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -24,7 +44,6 @@ public class User {
         this.pets = pets;
         this.matches = matches;
     }
-
     public List<Match> getMatches() {
         return matches;
     }
@@ -79,6 +98,10 @@ public class User {
 
     public void setPets(List<Pet> pets) {
         this.pets = pets;
+    }
+
+    public void addPet(Pet p){
+        this.pets.add(p);
     }
 
 }

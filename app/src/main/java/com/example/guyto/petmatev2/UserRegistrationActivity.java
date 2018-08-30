@@ -4,6 +4,7 @@ import android.animation.TypeConverter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,12 +27,11 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.security.MessageDigest;
 
-import static com.example.guyto.petmatev2.Utility.isEmailValid;
-import static com.example.guyto.petmatev2.Utility.isMatchingPassword;
-import static com.example.guyto.petmatev2.Utility.isPasswordValid;
-import static com.example.guyto.petmatev2.Utility.isPhoneValid;
-import static com.example.guyto.petmatev2.Utility.isTextValid;
+import static com.example.guyto.petmatev2.Utility.containsDigitAndLetterOnly;
+import static com.example.guyto.petmatev2.Utility.isPureNum;
+import static com.example.guyto.petmatev2.Utility.isPureString;
 import static com.example.guyto.petmatev2.Utility.sha256;
+
 
 public class UserRegistrationActivity extends AppCompatActivity {
 
@@ -46,7 +46,6 @@ public class UserRegistrationActivity extends AppCompatActivity {
     private Button mStartUseBtn;
     private String email, passRepeat, password, fname ,lname, phone, emailHash;
     private User u;
-    private boolean debug = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,28 +62,30 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mStartUseBtn = (Button) findViewById(R.id.startUseBtn);
         mFirstNameView.requestFocus();
 
-
-
-
-
         mStartUseBtn.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View view) {
                 if (isValidRegistration()){
                     try {
-                        u = new User(fname, lname, email, password, phone,null,null);
+                        u = User.getInstance();
+                        u.instantiate(fname, lname, email, password, phone,null,null);
                         emailHash = sha256(email);
-                        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()){
-                                    registerUser();
-                                }else{
-                                    Toast.makeText(getApplicationContext(),"Authentication incomplete", Toast.LENGTH_LONG).show();
+                        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1){
+                            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()){
+                                        registerUser();
+                                    }else{
+                                        Toast.makeText(getApplicationContext(),"Authentication incomplete", Toast.LENGTH_LONG).show();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }else{
+                            registerUser();
+                        }
+
 
                     }catch(Exception e){
                         Toast.makeText(getApplicationContext(),"Authentication sha: "+sha256(email)+"-----"+ e.toString(), Toast.LENGTH_LONG).show();
@@ -153,6 +154,73 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mPasswordRepeatView.setError(null);
     }
 
+    private boolean isTextValid(EditText t, String s){
+        if (TextUtils.isEmpty(s)){
+            t.setError(getString(R.string.error_field_required));
+            return false;
+        }
+        if(!isPureString(s)) {
+            t.setError(getString(R.string.error_invalid_format));
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isPhoneValid(EditText t, String s){
+        if (TextUtils.isEmpty(s)){
+            t.setError(getString(R.string.error_field_required));
+            return false;
+        }
+        if(!isPureNum(s)){
+            t.setError(getString(R.string.error_invalid_format));
+            return false;
+        }
+        if(s.length()!=10){
+            t.setError(getString(R.string.error_invalid_length));
+            return false;
+        }
+        return true;
+    }
+    private boolean isPasswordValid(EditText p, String s){
+
+        if (TextUtils.isEmpty(s)){
+            p.setError(getString(R.string.error_field_required));
+            return false;
+        }
+        if(s.length()<4){
+            p.setError(getString(R.string.error_invalid_password));
+            return false;
+        }
+        if(!containsDigitAndLetterOnly(s)) {
+            p.setError(getString(R.string.error_no_legal_password));
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isEmailValid(EditText e, String email) {
+        if (TextUtils.isEmpty(email)) {
+            e.setError(getString(R.string.error_field_required));
+            return false;
+        }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            e.setError(getString(R.string.error_invalid_email));
+            return false;
+        }
+        return true;
+    }
+
+
+    private boolean isMatchingPassword(EditText p , String src, String target){
+        if(!src.equals(target)){
+            p.setError(getString(R.string.error_matched_passwords));
+            return false;
+        }
+        return true;
+    }
+
+
     private void registerUser(){
         try {
             DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(emailHash);
@@ -162,15 +230,8 @@ public class UserRegistrationActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
-                        SharedPreferences sharedPreferences = getSharedPreferences(
-                                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("UserName", fname + "" + lname);
-                        editor.putString("Phone", phone);
-                        editor.apply();
+                        saveToSharedPref(fname+" "+lname, phone);
                         goToMyPets();
-
                     } else {
                         Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
                     }
@@ -186,4 +247,13 @@ public class UserRegistrationActivity extends AppCompatActivity {
         finish();
     }
 
+    private void saveToSharedPref(String fullName, String phone){
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("UserName", fullName);
+        editor.putString("Phone", phone);
+        editor.apply();
+    }
 }
