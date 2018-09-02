@@ -105,7 +105,7 @@
         app:srcCompat="@drawable/my_pets_profile" />
 
     <ImageView
-        android:id="@+id/imageFrame"
+        android:id="@+id/petProfileImg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -120,7 +120,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.394"
-        app:srcCompat="@drawable/pet_prof_frame" />
+        app:srcCompat="@drawable/silhouette" />
 
     <Button
         android:id="@+id/rightBtn"
@@ -136,7 +136,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.653"
-        app:layout_constraintStart_toEndOf="@+id/imageFrame"
+        app:layout_constraintStart_toEndOf="@+id/petProfileImg"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.41" />
 

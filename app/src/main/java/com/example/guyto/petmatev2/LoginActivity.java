@@ -26,6 +26,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.example.guyto.petmatev2.Utility.containsDigitAndLetterOnly;
 import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
@@ -40,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button acnt_btn;
     private String email, password;
     private User appUser;
+    private List<Pet> petList;
 
 
     @Override
@@ -54,6 +58,7 @@ public class LoginActivity extends AppCompatActivity {
         login_btn = (Button) findViewById(R.id.login_btn);
         acnt_btn = (Button) findViewById(R.id.new_acnt_btn);
         appUser = User.getInstance();
+        petList = new ArrayList<Pet>();
         acnt_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,8 +184,8 @@ public class LoginActivity extends AppCompatActivity {
     }
     private void regLogin(){
         String hashedEmail = sha256(email);
-        Query userQuery = usersRef.child(hashedEmail);
-        userQuery.addValueEventListener(new ValueEventListener() {
+        DatabaseReference userQuery = usersRef.child(hashedEmail);
+        userQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot){
                 try {
@@ -192,7 +197,9 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
                                 Toast.LENGTH_SHORT).show();
                     }
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    makeToast(getApplicationContext(), "At regLogin: "+ e.toString());
+                }
             }
 
             @Override
@@ -201,5 +208,33 @@ public class LoginActivity extends AppCompatActivity {
                         databaseError.toException(), Toast.LENGTH_SHORT).show();
             }
         });
+
+//        DatabaseReference petsQuery = usersRef.child(hashedEmail).child("Pets");
+//        petsQuery.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot){
+//                try {
+//                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+//                        petList.add(child.getValue(Pet.class));
+//                    }
+//
+//                    if(appUser.getEmail().equals(email) && appUser.getPassword().equals(password)) {
+//                        Toast.makeText(getApplicationContext(), "Hi " + appUser.getFirstName() + ". You are logged in.", Toast.LENGTH_SHORT).show();
+//                        goToMyPets();
+//                    }else {
+//                        Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//                } catch (Exception e) {
+//                    makeToast(getApplicationContext(), "At regLogin: "+ e.toString());
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                Toast.makeText(getApplicationContext(), "Failed to read value." +
+//                        databaseError.toException(), Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 }

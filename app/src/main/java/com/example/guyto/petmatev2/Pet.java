@@ -7,15 +7,16 @@ public class Pet {
     private String lookingFor;
     private String purpose;
     private String area;
+    private String imageUri;
 
-
-    public Pet(String name, String type, String gender, String lookingFor, String purpose, String area) {
+    public Pet(String name, String type, String gender, String lookingFor, String purpose, String area, String imageUri) {
         this.name = name;
         this.type = type;
         this.gender = gender;
         this.lookingFor = lookingFor;
         this.purpose = purpose;
         this.area = area;
+        this.imageUri = imageUri;
     }
 
     public Pet(){
@@ -25,6 +26,7 @@ public class Pet {
         this.lookingFor = "Any";
         this.purpose = "Sport";
         this.area = "Sharon";
+        this.imageUri = "";
     }
 
     public String getName() {
@@ -74,4 +76,13 @@ public class Pet {
     public void setArea(String area) {
         this.area = area;
     }
+
+    public String getImageUri() {
+        return imageUri;
+    }
+
+    public void setImageUri(String imageUri) {
+        this.imageUri = imageUri;
+    }
+
 }

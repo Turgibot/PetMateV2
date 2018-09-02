@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +30,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import static com.example.guyto.petmatev2.Utility.isPureString;
+import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 
 public class PetProfileActivity extends AppCompatActivity {
@@ -40,6 +43,7 @@ public class PetProfileActivity extends AppCompatActivity {
     private Spinner typeSpinner, genderSpinner, lookingSpinner, purposeSpinner, areaSpinner;
     private static final String[] typeOptions = {"Dog", "Cat", "Pig", "Horse", "Donkey", "Other"};
     private static final String[] genderOptions = {"Male", "Female", "Other"};
+    private static final String[] lookingOptions = {"Female", "Male", "Other"};
     private static final String[] purposeOptions = {"Sport", "Breeding", "Fun", "Other"};
     private static final String[] areaOptions = {"Galil", "Golan", "Shfela", "Sharon", "Gush Dan", "Negev"};
     private String selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea;
@@ -69,7 +73,7 @@ public class PetProfileActivity extends AppCompatActivity {
         final ArrayAdapter<String> genderAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
                 android.R.layout.simple_spinner_item, genderOptions);
         final ArrayAdapter<String> lookingAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
-                android.R.layout.simple_spinner_item, genderOptions);
+                android.R.layout.simple_spinner_item, lookingOptions);
         final ArrayAdapter<String> purposeAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
                 android.R.layout.simple_spinner_item, purposeOptions);
         final ArrayAdapter<String> areaAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
@@ -80,8 +84,7 @@ public class PetProfileActivity extends AppCompatActivity {
         setAdapterAndListener(lookingAdapter, lookingSpinner);
         setAdapterAndListener(purposeAdapter, purposeSpinner);
         setAdapterAndListener(areaAdapter, areaSpinner);
-
-        lookingSpinner.setSelection(1);
+        setDefaultValues();
 
         photoView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,17 +113,18 @@ public class PetProfileActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(imageUri == null){
+                    makeToast(getApplicationContext(), "Please set your pets profile image first!");
+                    return;
+                }
+                getSpinnerValues();
                 String currPetName = petName.getText().toString();
                 if(!isTextValid(petName, currPetName)){
                     return;
                 }
-                Pet pet = new Pet(currPetName, typeSpinner.getSelectedItem().toString(), genderSpinner.getSelectedItem().toString()
-                        , lookingSpinner.getSelectedItem().toString(), purposeSpinner.getSelectedItem().toString(), areaSpinner.getSelectedItem().toString());
-                //TODO read email from shared preferences and add pet to db
+                Pet pet = new Pet(currPetName, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, imageUri.toString());
                 String hashedEmail = sha256(getSPEmail());
-                usersRef.child(hashedEmail).child("Pets").setValue(pet);
-
-
+                usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet);
             }
         });
         //String name, String type, String gender, String lookingFor, String purpose, String area)
@@ -132,7 +136,8 @@ public class PetProfileActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 imageUri = result.getUri();
-                //photoView.setImageURI(imageUri);
+                //TODO save image in custom url instead
+                photoView.setImageURI(imageUri);
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
@@ -140,13 +145,13 @@ public class PetProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void setAdapterAndListener( final ArrayAdapter<String> adapter, Spinner spinner){
+    private void setAdapterAndListener(final ArrayAdapter<String> adapter, Spinner spinner){
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(PetProfileActivity.this, "selected: "+adapter.getItem(position), Toast.LENGTH_LONG).show();
+                //Toast.makeText(PetProfileActivity.this, "selected: "+adapter.getItem(position), Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -176,5 +181,20 @@ public class PetProfileActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         return sharedPreferences.getString("email", "errorGettingEmail");
+    }
+    private void setDefaultValues(){
+        selectedArea = areaOptions[0];
+        selectedGender = genderOptions[0];
+        selectedLooking = lookingOptions[0];
+        selectedPurpose = purposeOptions[0];
+        selectedType = typeOptions[0];
+    }
+
+    private void getSpinnerValues(){
+        selectedArea = areaSpinner.getSelectedItem().toString();
+        selectedGender = genderSpinner.getSelectedItem().toString();
+        selectedLooking = lookingSpinner.getSelectedItem().toString();
+        selectedPurpose = purposeSpinner.getSelectedItem().toString();
+        selectedType = typeSpinner.getSelectedItem().toString();
     }
 }
