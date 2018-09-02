@@ -139,7 +139,7 @@ public class LoginActivity extends AppCompatActivity {
             p.setError(getString(R.string.error_field_required));
             return false;
         }
-        if(s.length()<4){
+        if(s.length()<6){
             p.setError(getString(R.string.error_invalid_password));
             return false;
         }

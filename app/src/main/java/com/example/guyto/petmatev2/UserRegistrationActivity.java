@@ -187,7 +187,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
             p.setError(getString(R.string.error_field_required));
             return false;
         }
-        if(s.length()<4){
+        if(s.length()<6){
             p.setError(getString(R.string.error_invalid_password));
             return false;
         }
@@ -230,7 +230,6 @@ public class UserRegistrationActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
-                        saveToSharedPref(fname+" "+lname, phone);
                         goToMyPets();
                     } else {
                         Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
@@ -242,18 +241,17 @@ public class UserRegistrationActivity extends AppCompatActivity {
         }
     }
     private void goToMyPets(){
+        saveToSharedPref(email);
         Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
         startActivity(intent);
         finish();
     }
 
-    private void saveToSharedPref(String fullName, String phone){
+    private void saveToSharedPref(String email){
         SharedPreferences sharedPreferences = getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("UserName", fullName);
-        editor.putString("Phone", phone);
+        editor.putString("email", email);
         editor.apply();
     }
 }

@@ -1,7 +1,9 @@
 package com.example.guyto.petmatev2;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -24,8 +26,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.guyto.petmatev2.Utility.isPureString;
 import static com.example.guyto.petmatev2.Utility.sha256;
@@ -117,7 +117,7 @@ public class PetProfileActivity extends AppCompatActivity {
                 Pet pet = new Pet(currPetName, typeSpinner.getSelectedItem().toString(), genderSpinner.getSelectedItem().toString()
                         , lookingSpinner.getSelectedItem().toString(), purposeSpinner.getSelectedItem().toString(), areaSpinner.getSelectedItem().toString());
                 //TODO read email from shared preferences and add pet to db
-                String hashedEmail = sha256(/*get email from shared mem */);
+                String hashedEmail = sha256(getSPEmail());
                 usersRef.child(hashedEmail).child("Pets").setValue(pet);
 
 
@@ -171,5 +171,10 @@ public class PetProfileActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+    private String getSPEmail(){
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        return sharedPreferences.getString("email", "errorGettingEmail");
     }
 }
