@@ -19,7 +19,7 @@ public class OpenActivity extends AppCompatActivity {
             public void run() {
                 try{
                     synchronized (this){
-                        wait(3000);
+                        wait(100);
                         Intent intent = new Intent(OpenActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();

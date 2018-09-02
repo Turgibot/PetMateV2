@@ -19,7 +19,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,6 +27,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import static com.example.guyto.petmatev2.Utility.containsDigitAndLetterOnly;
+import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 
 public class LoginActivity extends AppCompatActivity {
@@ -117,12 +117,17 @@ public class LoginActivity extends AppCompatActivity {
             .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        regLogin();
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
-                                Toast.LENGTH_SHORT).show();
+                    try {
+                        if (task.isSuccessful()) {
+                            regLogin();
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            //todo use toast function
+                            Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (Exception e){
+                        makeToast(getApplicationContext(),"At signInWithEmailAndPassword: "+e.toString());
                     }
                 }
             });
@@ -158,16 +163,16 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-    private void saveToSharedPref(String fullName, String phone){
+    private void saveToSharedPref(String userEmail){
         SharedPreferences sharedPreferences = getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
 
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("UserName", fullName);
-        editor.putString("Phone", phone);
+        editor.putString("email", userEmail);
         editor.apply();
     }
     private void goToMyPets(){
+        saveToSharedPref(email);
         Intent intent = new Intent(LoginActivity.this, MyPetsActivity.class);
         startActivity(intent);
         finish();
@@ -177,18 +182,17 @@ public class LoginActivity extends AppCompatActivity {
         Query userQuery = usersRef.child(hashedEmail);
         userQuery.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(DataSnapshot dataSnapshot){
                 try {
                     appUser = dataSnapshot.getValue(User.class);
                     if(appUser.getEmail().equals(email) && appUser.getPassword().equals(password)) {
                         Toast.makeText(getApplicationContext(), "Hi " + appUser.getFirstName() + ". You are logged in.", Toast.LENGTH_SHORT).show();
-                        saveToSharedPref(appUser.getFirstName() + " " + appUser.getLastName(), appUser.getPhone());
                         goToMyPets();
+                    }else {
+                        Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
+                                Toast.LENGTH_SHORT).show();
                     }
-                } catch (Exception e) {
-                    Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
-                            Toast.LENGTH_SHORT).show();
-                }
+                } catch (Exception e) {}
             }
 
             @Override

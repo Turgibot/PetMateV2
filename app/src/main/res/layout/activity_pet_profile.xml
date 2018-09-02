@@ -210,7 +210,6 @@
         android:layout_marginTop="8dp"
         android:background="@color/colorMainLight"
         android:contentDescription="@string/big_frame"
-        android:src="@drawable/dogprof"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
