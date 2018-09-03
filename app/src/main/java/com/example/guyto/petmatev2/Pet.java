@@ -7,26 +7,29 @@ public class Pet {
     private String lookingFor;
     private String purpose;
     private String area;
-    private String imageUri;
+    private String age;
+    private String image;
 
-    public Pet(String name, String type, String gender, String lookingFor, String purpose, String area, String imageUri) {
+    public Pet(String name, String age, String type, String gender, String lookingFor, String purpose, String area, String image) {
         this.name = name;
+        this.age = age;
         this.type = type;
         this.gender = gender;
         this.lookingFor = lookingFor;
         this.purpose = purpose;
         this.area = area;
-        this.imageUri = imageUri;
+        this.image = image;
     }
 
     public Pet(){
         this.name = "example";
+        this.age = "5";
         this.type = "Dog";
-        this.gender = "Female";
-        this.lookingFor = "Any";
+        this.gender = "Male";
+        this.lookingFor = "Female";
         this.purpose = "Sport";
         this.area = "Sharon";
-        this.imageUri = "";
+        this.image = "";
     }
 
     public String getName() {
@@ -36,7 +39,13 @@ public class Pet {
     public void setName(String name) {
         this.name = name;
     }
+    public String getAge() {
+        return age;
+    }
 
+    public void setAge(String age) {
+        this.age = age;
+    }
     public String getType() {
         return type;
     }
@@ -77,12 +86,12 @@ public class Pet {
         this.area = area;
     }
 
-    public String getImageUri() {
-        return imageUri;
+    public String getImage() {
+        return image;
     }
 
-    public void setImageUri(String imageUri) {
-        this.imageUri = imageUri;
+    public void setImage(String image) {
+        this.image = image;
     }
 
 }
