@@ -25,13 +25,14 @@ import java.util.List;
 
 import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
+import static java.lang.StrictMath.abs;
 
 public class MyPetsActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
     private String email;
     private User user;
-    private Button addPetBtn, rightBtn, leftBtn;
+    private Button addPetBtn, rightBtn, leftBtn, editProfBtn;
     private TextView infoText, nameText;
     private List<Pet> petList;
     private ImageView petProfileImg;
@@ -49,6 +50,7 @@ public class MyPetsActivity extends AppCompatActivity {
         rightBtn = (Button)findViewById(R.id.rightBtn);
         leftBtn = (Button)findViewById(R.id.leftBtn);
         addPetBtn = (Button)findViewById(R.id.addPetBtn);
+        editProfBtn = (Button)findViewById(R.id.editProfBtn);
         infoText = (TextView)findViewById(R.id.info_text);
         nameText = (TextView)findViewById(R.id.name_text);
         petList = new ArrayList<Pet>();
@@ -63,7 +65,7 @@ public class MyPetsActivity extends AppCompatActivity {
                     user = dataSnapshot.getValue(User.class);
                     DataSnapshot petRef = dataSnapshot.child("Pets");
                     if (petRef.getChildrenCount() == 0){
-                        diplayDefaultInfo();
+                        displayDefaultInfo();
                         return;
                     }else{
                         for(DataSnapshot child: petRef.getChildren()){
@@ -104,12 +106,13 @@ public class MyPetsActivity extends AppCompatActivity {
     }
 
     private void goToPetProfile(boolean isEdit){
-        if(isEdit){
-
-        }else{
-
-        }
         Intent intent = new Intent(MyPetsActivity.this, PetProfileActivity.class);
+        if(isEdit){
+            intent.putExtra("isEdit",true);
+        }else{
+            intent.putExtra("isEdit",false);
+        }
+
         startActivity(intent);
         finish();
     }
@@ -127,7 +130,7 @@ public class MyPetsActivity extends AppCompatActivity {
             } else {
                 petIndex = (petIndex - 1) % petList.size();
             }
-            displayPetInfo(petList.get(petIndex));
+            displayPetInfo(petList.get(abs(petIndex)));
         }
     }
 
@@ -148,7 +151,7 @@ public class MyPetsActivity extends AppCompatActivity {
         String info = "I'm a "+age+" year old "+gender+" "+type+"\nfrom the "+area+" area.\nLooking for a "+looking+" "+type+" for "+purpose+".";
         infoText.setText(info);
     }
-    private void diplayDefaultInfo(){
+    private void displayDefaultInfo(){
         nameText.setText("Your Pet's Name");
         String info = "Click on the Add Pets button to add your pets";
         infoText.setText(info);

@@ -64,6 +64,7 @@ public class PetProfileActivity extends AppCompatActivity {
     private String selectedType, selectedAge, selectedGender, selectedLooking, selectedPurpose, selectedArea;
     private static final int PERMISIONS = 101;
     private Uri imageUri;
+    private boolean isEditMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,7 @@ public class PetProfileActivity extends AppCompatActivity {
         cancelBtn = (Button)findViewById(R.id.cancelProfileBtn);
         saveBtn = (Button) findViewById(R.id.saveProfileBtn);
         petName = (EditText)findViewById(R.id.petName);
-
+        isEditMode = getEditMode();
 
 
         final ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
@@ -158,6 +159,7 @@ public class PetProfileActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             makeToast(getApplicationContext(), "successfully added "+currPetName+" to your pets");
+                            cancelBtn.setBackgroundResource(R.drawable.back_red_btn);
                         }else{
                             makeToast(getApplicationContext(),"Error when adding pet");
                         }
@@ -234,5 +236,9 @@ public class PetProfileActivity extends AppCompatActivity {
         selectedLooking = lookingSpinner.getSelectedItem().toString();
         selectedPurpose = purposeSpinner.getSelectedItem().toString();
         selectedType = typeSpinner.getSelectedItem().toString();
+    }
+    private boolean getEditMode(){
+        Intent intent = getIntent();
+        return intent.getBooleanExtra("isEdit",false);
     }
 }
