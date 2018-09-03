@@ -184,7 +184,7 @@ public class LoginActivity extends AppCompatActivity {
     }
     private void regLogin(){
         String hashedEmail = sha256(email);
-        DatabaseReference userQuery = usersRef.child(hashedEmail);
+        DatabaseReference userQuery = usersRef.child(hashedEmail).getRef();
         userQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot){
@@ -209,32 +209,5 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-//        DatabaseReference petsQuery = usersRef.child(hashedEmail).child("Pets");
-//        petsQuery.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot){
-//                try {
-//                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-//                        petList.add(child.getValue(Pet.class));
-//                    }
-//
-//                    if(appUser.getEmail().equals(email) && appUser.getPassword().equals(password)) {
-//                        Toast.makeText(getApplicationContext(), "Hi " + appUser.getFirstName() + ". You are logged in.", Toast.LENGTH_SHORT).show();
-//                        goToMyPets();
-//                    }else {
-//                        Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
-//                                Toast.LENGTH_SHORT).show();
-//                    }
-//                } catch (Exception e) {
-//                    makeToast(getApplicationContext(), "At regLogin: "+ e.toString());
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                Toast.makeText(getApplicationContext(), "Failed to read value." +
-//                        databaseError.toException(), Toast.LENGTH_SHORT).show();
-//            }
-//        });
     }
 }

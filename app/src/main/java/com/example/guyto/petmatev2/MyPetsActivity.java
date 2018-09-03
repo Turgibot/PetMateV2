@@ -103,14 +103,30 @@ public class MyPetsActivity extends AppCompatActivity {
             }
         });
 
+        editProfBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToPetProfile(true);
+
+            }
+        });
+        petProfileImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToMatchFinder();
+            }
+        });
+
     }
 
     private void goToPetProfile(boolean isEdit){
         Intent intent = new Intent(MyPetsActivity.this, PetProfileActivity.class);
         if(isEdit){
             intent.putExtra("isEdit",true);
+            intent.putExtra("petName", petList.get(petIndex).getName());
         }else{
             intent.putExtra("isEdit",false);
+
         }
 
         startActivity(intent);
@@ -130,14 +146,15 @@ public class MyPetsActivity extends AppCompatActivity {
             } else {
                 petIndex = (petIndex - 1) % petList.size();
             }
-            displayPetInfo(petList.get(abs(petIndex)));
+            petIndex = abs(petIndex);
+            displayPetInfo(petList.get(petIndex));
         }
     }
 
     private void displayPetInfo(Pet pet){
         displayImage(pet.getImage());
         nameText.setText(pet.getName());
-        displayInfo(pet.getAge(), pet.getAge(), pet.getType(), pet.getArea(), pet.getLookingFor(), pet.getPurpose());
+        displayInfo(pet.getAge(), pet.getGender(), pet.getType(), pet.getArea(), pet.getLookingFor(), pet.getPurpose());
     }
     private void displayImage(String imageStr){
         byte[] imageBytes = Base64.decode(imageStr, Base64.DEFAULT);
@@ -157,4 +174,12 @@ public class MyPetsActivity extends AppCompatActivity {
         infoText.setText(info);
     }
 
+    private void goToMatchFinder(){
+        if(petList == null)
+            return;
+        Intent intent = new Intent(MyPetsActivity.this, MatchFinderActivity.class);
+        intent.putExtra("petName",nameText.getText().toString());
+        startActivity(intent);
+        finish();
+    }
 }

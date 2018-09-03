@@ -46,6 +46,7 @@ public class Pet {
     public void setAge(String age) {
         this.age = age;
     }
+
     public String getType() {
         return type;
     }
