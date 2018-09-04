@@ -47,9 +47,9 @@ public class MatchFinderActivity extends Activity{
     private DatabaseReference usersRef;
     private ArrayList<Pet> petList;
     private PetAdapter petAdapter;
-    private String srcPetName, hashedEmail;
-    private Pet srcPet, targetPet;
-    private User srcUser, targetUser;
+    private String srcPetName, hashedEmail, instructionStr, lastStr;
+    private Pet srcPet, lastPet, selectedPet, firstPet;
+    private User srcUser;
     static Semaphore mutex;
     private Button backBtn;
     private boolean isDataReady;
@@ -64,13 +64,15 @@ public class MatchFinderActivity extends Activity{
         usersRef = database.getReference(getString(R.string.users));
         hashedEmail = sha256(getSPEmail());
         getSrcUser(hashedEmail);
+        instructionStr = "Swipe right to Like\nLeft tp pass";
+        lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
         srcPetName = getSrcPetName();
         isDataReady = false;
         petList = new ArrayList<>();
-        Pet firstPet = new Pet("Example", "","Swipe right to Like\nLeft tp pass","","","","",getSilhouete(),null);
-        Pet lastPet = new Pet("That's it", "","You've gone \nLeft tp pass","","","","",getSilhouete(),null);
-        petList.add(demo);
+        firstPet = new Pet("Example", "",instructionStr,"","","","",getSilhouete(),null);
+        lastPet = new Pet("Yeah!!!", "",lastStr,"","","","",firstPet.getImage(),null);
+        petList.add(firstPet);
         petAdapter = new PetAdapter(this, petList );
 
         flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
@@ -102,7 +104,9 @@ public class MatchFinderActivity extends Activity{
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                //petList.add("XML ".concat(String.valueOf(i)));
+                makeToast(getApplicationContext(), "itemsInAdapter: "+itemsInAdapter);
+
+                petList.add(lastPet);
                 petAdapter.notifyDataSetChanged();
                 Log.d("LIST", "notified");
                 i++;
@@ -132,10 +136,6 @@ public class MatchFinderActivity extends Activity{
 
     static void makeToast(Context ctx, String s){
         Toast.makeText(ctx, s, Toast.LENGTH_SHORT).show();
-    }
-    private void setAdapter(){
-
-
     }
 
     private String getSPEmail(){
@@ -200,8 +200,6 @@ public class MatchFinderActivity extends Activity{
                             }
                         }
                     }
-                    setAdapter();
-                    mutex.release();
                 } catch (Exception e) {
                     petList = null;
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
@@ -249,9 +247,16 @@ public class MatchFinderActivity extends Activity{
             TextView textViewName = (TextView)itemView.findViewById(R.id.flingName);
             TextView textViewInfo = (TextView)itemView.findViewById(R.id.flingInfo);
             ImageView profileImageView = (ImageView)itemView.findViewById(R.id.flingImage);
-            Pet selectedPet = pets.get(position);
+            selectedPet = pets.get(position);
             textViewName.setText(selectedPet.getName());
-            textViewInfo.setText("A "+selectedPet.getAge()+" year old "+selectedPet.getGender() +" "+selectedPet.getType()+".\nI'm from the "+selectedPet.getArea()+" area.\nI'm here for the purpose of "+selectedPet.getPurpose());
+            String info;
+            if(selectedPet == lastPet)
+                info = lastStr;
+            else if(selectedPet == firstPet)
+                info = instructionStr;
+            else
+                info ="A "+selectedPet.getAge()+" year old "+selectedPet.getGender() +" "+selectedPet.getType()+".\nI'm from the "+selectedPet.getArea()+" area.\nI'm here for the purpose of "+selectedPet.getPurpose()+".";
+            textViewInfo.setText(info);
             byte[] imageBytes = Base64.decode(selectedPet.getImage(), Base64.DEFAULT);
             Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
             profileImageView.setImageBitmap(decodedImage);
