@@ -37,7 +37,7 @@ public class MatchFinderActivity extends Activity{
         al.add("css");
         al.add("javascript");
 
-        arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.nameText, al );
+        arrayAdapter = new ArrayAdapter<>(this, R.layout.item, R.id.flingName, al );
 
         SwipeFlingAdapterView flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
 

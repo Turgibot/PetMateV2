@@ -1,5 +1,8 @@
 package com.example.guyto.petmatev2;
 
+import java.util.ArrayList;
+import java.util.Dictionary;
+
 public class Pet {
     private String name;
     private String type;
@@ -9,8 +12,9 @@ public class Pet {
     private String area;
     private String age;
     private String image;
+    private Dictionary<String,ArrayList<String>> likesDict;
 
-    public Pet(String name, String age, String type, String gender, String lookingFor, String purpose, String area, String image) {
+    public Pet(String name, String age, String type, String gender, String lookingFor, String purpose, String area, String image, Dictionary<String, ArrayList<String>> likesDict) {
         this.name = name;
         this.age = age;
         this.type = type;
@@ -19,6 +23,7 @@ public class Pet {
         this.purpose = purpose;
         this.area = area;
         this.image = image;
+        this.likesDict = likesDict;
     }
 
     public Pet(){
@@ -30,6 +35,7 @@ public class Pet {
         this.purpose = "Sport";
         this.area = "Sharon";
         this.image = "";
+        this.likesDict = null;
     }
 
     public String getName() {
@@ -95,4 +101,11 @@ public class Pet {
         this.image = image;
     }
 
+    public Dictionary<String, ArrayList<String>> getLikesDict() {
+        return likesDict;
+    }
+
+    public void setLikesDict(Dictionary<String, ArrayList<String>> likesDict) {
+        this.likesDict = likesDict;
+    }
 }

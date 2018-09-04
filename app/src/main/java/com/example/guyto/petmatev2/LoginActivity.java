@@ -198,7 +198,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
-                    makeToast(getApplicationContext(), "At regLogin: "+ e.toString());
+                    makeToast(getApplicationContext(), "Please make sure you register first");
                 }
             }
 

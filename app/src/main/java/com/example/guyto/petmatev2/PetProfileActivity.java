@@ -49,7 +49,7 @@ import java.io.ByteArrayOutputStream;
 import static com.example.guyto.petmatev2.Utility.isPureString;
 import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
-//Todo implement delete, name change insert back btn logic
+//Todo implement delete, name change insert back btn logic , change save btn to add a pet
 public class PetProfileActivity extends AppCompatActivity {
 
     private FirebaseDatabase database;
@@ -60,9 +60,9 @@ public class PetProfileActivity extends AppCompatActivity {
     private Spinner typeSpinner, genderSpinner, lookingSpinner, purposeSpinner, areaSpinner, ageSpinner;
     private static final String[] typeOptions = {"Dog", "Cat", "Pig", "Horse", "Donkey", "Other"};
     private static final String[] ageOptions = {"less than a","1", "2", "3", "4", "5", "6", "7", "8", "9","older than 10","older than 20","older than 30","older than 50",};
-    private static final String[] genderOptions = {"Male", "Female", "Other"};
-    private static final String[] lookingOptions = {"Female", "Male", "Other"};
-    private static final String[] purposeOptions = {"Sport", "Breeding", "Fun", "Other"};
+    private static final String[] genderOptions = {"Male", "Female", "Any"};
+    private static final String[] lookingOptions = {"Female", "Male", "Any"};
+    private static final String[] purposeOptions = {"Sport", "Breeding", "Fun", "Any"};
     private static final String[] areaOptions = {"Galil", "Golan", "Shfela", "Sharon", "Gush Dan", "Negev"};
     private String selectedType, selectedAge, selectedGender, selectedLooking, selectedPurpose, selectedArea;
     private static final int PERMISIONS = 101;
@@ -123,7 +123,7 @@ public class PetProfileActivity extends AppCompatActivity {
                     else{
                         CropImage.activity()
                                 .setGuidelines(CropImageView.Guidelines.ON)
-                                .setAspectRatio(3, 2)
+                                .setAspectRatio(1, 1)
                                 .start(PetProfileActivity.this);
                     }
                 }
@@ -162,7 +162,7 @@ public class PetProfileActivity extends AppCompatActivity {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] bytes = baos.toByteArray();
                 String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
-                Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image);
+                Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
                 String hashedEmail = sha256(getSPEmail());
                 usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -170,6 +170,13 @@ public class PetProfileActivity extends AppCompatActivity {
                         if(task.isSuccessful()){
                             makeToast(getApplicationContext(), "successfully updated "+currPetName+" to your pets");
                             cancelBtn.setBackgroundResource(R.drawable.back_red_btn);
+                            saveBtn.setBackgroundResource(R.drawable.add_a_pet);
+                            saveBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+
+                                }
+                            });
                         }else{
                             makeToast(getApplicationContext(),"Error when adding pet");
                         }
@@ -261,6 +268,7 @@ public class PetProfileActivity extends AppCompatActivity {
             });
 
         }else {
+            photoView.setImageResource(R.drawable.silhouette);
             selectedArea = areaOptions[0];
             selectedGender = genderOptions[0];
             selectedLooking = lookingOptions[0];

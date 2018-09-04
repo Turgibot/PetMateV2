@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,7 +27,7 @@ import java.util.List;
 import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 import static java.lang.StrictMath.abs;
-
+//TODO cancel click on photo and on edit profile if no pets
 public class MyPetsActivity extends AppCompatActivity {
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
@@ -65,6 +66,8 @@ public class MyPetsActivity extends AppCompatActivity {
                     user = dataSnapshot.getValue(User.class);
                     DataSnapshot petRef = dataSnapshot.child("Pets");
                     if (petRef.getChildrenCount() == 0){
+                        editProfBtn.setVisibility(View.INVISIBLE);
+                        petProfileImg.setClickable(false);
                         displayDefaultInfo();
                         return;
                     }else{
@@ -170,7 +173,7 @@ public class MyPetsActivity extends AppCompatActivity {
     }
     private void displayDefaultInfo(){
         nameText.setText("Your Pet's Name");
-        String info = "Click on the Add Pets button to add your pets";
+        String info = "Click on the \"Add a pet\" button to add your pets";
         infoText.setText(info);
     }
 
