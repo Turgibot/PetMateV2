@@ -74,5 +74,22 @@
         app:rotation_degrees="15.5"
         tools:context=".MyActivity" />
 
+    <ImageView
+        android:id="@+id/demoView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="216dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@string/med_frame"
+        android:src="@drawable/silhouette"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/frame"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="@+id/frame" />
+
 
 </android.support.constraint.ConstraintLayout>
