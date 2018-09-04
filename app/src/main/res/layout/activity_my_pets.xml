@@ -48,8 +48,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.588" />
 
-    <Button
-        android:id="@+id/menuBtn"
+    <Spinner
+        android:id="@+id/menuSpinner"
         android:layout_width="52dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"

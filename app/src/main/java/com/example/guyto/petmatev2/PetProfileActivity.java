@@ -69,12 +69,16 @@ public class PetProfileActivity extends AppCompatActivity {
     private Uri imageUri;
     private boolean isEditMode;
     private Pet editablePet;
+    private User user;
+    private Utility utils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pet_profile);
 
+        utils = new Utility();
+        user = utils.getSPUser(getApplicationContext());
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference(getString(R.string.users));
         photoView = (ImageView) findViewById(R.id.photoView);
@@ -163,7 +167,7 @@ public class PetProfileActivity extends AppCompatActivity {
                 byte[] bytes = baos.toByteArray();
                 String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
                 Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
-                String hashedEmail = sha256(getSPEmail());
+                String hashedEmail = sha256(user.getEmail());
                 usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -219,6 +223,7 @@ public class PetProfileActivity extends AppCompatActivity {
     }
     private void goToMyPets(){
         Intent intent = new Intent(PetProfileActivity.this, MyPetsActivity.class);
+        intent.putExtra("prevActivity", "PetProfileActivity");
         startActivity(intent);
         finish();
 
@@ -234,39 +239,19 @@ public class PetProfileActivity extends AppCompatActivity {
         }
         return true;
     }
-    private String getSPEmail(){
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPreferences.getString("email", "errorGettingEmail");
-    }
+
     private void setDefaultValues(){
         if(isEditMode){
-            Intent intent = getIntent();
-            final String petNameStr = intent.getStringExtra("petName");
-            String email = getSPEmail();
-            usersRef.child(sha256(email)).child("Pets").child(petNameStr).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    editablePet = dataSnapshot.getValue(Pet.class);
-
-                    areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
-                    ageSpinner.setSelection(getIndex(editablePet.getAge(), ageOptions));
-                    typeSpinner.setSelection(getIndex(editablePet.getType(), typeOptions));
-                    genderSpinner.setSelection(getIndex(editablePet.getGender(), genderOptions));
-                    lookingSpinner.setSelection(getIndex(editablePet.getLookingFor(), lookingOptions));
-                    purposeSpinner.setSelection(getIndex(editablePet.getPurpose(), purposeOptions));
-                    areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
-                    displayImage(editablePet.getImage());
-                    petName.setText(editablePet.getName());
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
+            editablePet = utils.getSPPet(getApplicationContext());
+            areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
+            ageSpinner.setSelection(getIndex(editablePet.getAge(), ageOptions));
+            typeSpinner.setSelection(getIndex(editablePet.getType(), typeOptions));
+            genderSpinner.setSelection(getIndex(editablePet.getGender(), genderOptions));
+            lookingSpinner.setSelection(getIndex(editablePet.getLookingFor(), lookingOptions));
+            purposeSpinner.setSelection(getIndex(editablePet.getPurpose(), purposeOptions));
+            areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
+            displayImage(editablePet.getImage());
+            petName.setText(editablePet.getName());
         }else {
             photoView.setImageResource(R.drawable.silhouette);
             selectedArea = areaOptions[0];

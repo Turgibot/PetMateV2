@@ -10,6 +10,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class OpenActivity extends AppCompatActivity {
+    private final int timeMS = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,7 +20,7 @@ public class OpenActivity extends AppCompatActivity {
             public void run() {
                 try{
                     synchronized (this){
-                        wait(5000);
+                        wait(timeMS);
                         Intent intent = new Intent(OpenActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();

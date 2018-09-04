@@ -6,15 +6,21 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,30 +28,41 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
 import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 import static java.lang.StrictMath.abs;
 //TODO cancel click on photo and on edit profile if no pets
 public class MyPetsActivity extends AppCompatActivity {
+    private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
     private String email;
     private User user;
     private Button addPetBtn, rightBtn, leftBtn, editProfBtn;
+    private Spinner menuSpinner;
     private TextView infoText, nameText;
     private List<Pet> petList;
     private ImageView petProfileImg;
     private int petIndex;
-
+    private boolean isSpinnerTouched, isBack;
+    private static final String[] menuOptions = {"","Profile", "Matches", "Logout"};
+    private Utility utils;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_pets);
+        final ArrayAdapter<String> menuAdapter = new ArrayAdapter<String>(MyPetsActivity.this,
+                android.R.layout.simple_spinner_item, menuOptions);
+        menuSpinner = (Spinner)findViewById(R.id.menuSpinner);
         database = FirebaseDatabase.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         usersRef = database.getReference(getString(R.string.users));
         petProfileImg = (ImageView)findViewById(R.id.petProfileImg);
         rightBtn = (Button)findViewById(R.id.rightBtn);
@@ -55,15 +72,27 @@ public class MyPetsActivity extends AppCompatActivity {
         infoText = (TextView)findViewById(R.id.info_text);
         nameText = (TextView)findViewById(R.id.name_text);
         petList = new ArrayList<Pet>();
+        isSpinnerTouched = false;
+        isBack = wasHere();
         petIndex = 0;
-        email = getSPEmail();
+        utils = new Utility();
+        user = utils.getSPUser(getApplicationContext());
+        email = user.getEmail();
+
+
+        if(isBack){
+            displayPetInfo(utils.getSPPet(getApplicationContext()));
+        }
+        setAdapterAndListener(menuAdapter, menuSpinner);
+
+
+
         if (email.isEmpty()){
             makeToast(getApplicationContext(), "email is not defined at MyPets");
         }else {
             usersRef.child(sha256(email)).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    user = dataSnapshot.getValue(User.class);
                     DataSnapshot petRef = dataSnapshot.child("Pets");
                     if (petRef.getChildrenCount() == 0){
                         editProfBtn.setVisibility(View.INVISIBLE);
@@ -75,7 +104,10 @@ public class MyPetsActivity extends AppCompatActivity {
                             petList.add(child.getValue(Pet.class));
                         }
                         user.setPets(petList);
-                        displayPetInfo(petList.get(0));
+                        if(!isBack){
+                            displayPetInfo(petList.get(0));
+                            utils.setSPPet(getApplicationContext(), petList.get(0));
+                        }
                     }
                 }
 
@@ -86,13 +118,13 @@ public class MyPetsActivity extends AppCompatActivity {
             });
         }
 
+
         addPetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 goToPetProfile(false);
             }
         });
-
         rightBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,7 +137,6 @@ public class MyPetsActivity extends AppCompatActivity {
                 cycleImages(false);
             }
         });
-
         editProfBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -126,22 +157,14 @@ public class MyPetsActivity extends AppCompatActivity {
         Intent intent = new Intent(MyPetsActivity.this, PetProfileActivity.class);
         if(isEdit){
             intent.putExtra("isEdit",true);
-            intent.putExtra("petName", petList.get(petIndex).getName());
         }else{
             intent.putExtra("isEdit",false);
 
         }
-
         startActivity(intent);
         finish();
     }
 
-
-    private String getSPEmail(){
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPreferences.getString("email", "errorGettingEmail");
-    }
     private void cycleImages(boolean right) {
         if (!petList.isEmpty()) {
             if (right) {
@@ -149,8 +172,8 @@ public class MyPetsActivity extends AppCompatActivity {
             } else {
                 petIndex = (petIndex - 1) % petList.size();
             }
-            petIndex = abs(petIndex);
-            displayPetInfo(petList.get(petIndex));
+            displayPetInfo(petList.get(abs(petIndex)));
+            utils.setSPPet(getApplicationContext(), petList.get(abs(petIndex)));
         }
     }
 
@@ -159,12 +182,10 @@ public class MyPetsActivity extends AppCompatActivity {
         nameText.setText(pet.getName());
         displayInfo(pet.getAge(), pet.getGender(), pet.getType(), pet.getArea(), pet.getLookingFor(), pet.getPurpose());
     }
+
     private void displayImage(String imageStr){
         byte[] imageBytes = Base64.decode(imageStr, Base64.DEFAULT);
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.outHeight = 100;
-        options.outWidth = 200;
-        Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length, options);
+        Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
         petProfileImg.setImageBitmap(decodedImage);
     }
     private void displayInfo(String age, String gender, String type, String area, String looking, String purpose){
@@ -181,8 +202,69 @@ public class MyPetsActivity extends AppCompatActivity {
         if(petList == null)
             return;
         Intent intent = new Intent(MyPetsActivity.this, MatchFinderActivity.class);
-        intent.putExtra("petName",nameText.getText().toString());
         startActivity(intent);
         finish();
+    }
+
+    private void setAdapterAndListener(final ArrayAdapter<String> adapter, final Spinner spinner){
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                isSpinnerTouched = true;
+                return false;
+            }
+        });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //Toast.makeText(PetProfileActivity.this, "selected: "+adapter.getItem(position), Toast.LENGTH_LONG).show();
+                if(!isSpinnerTouched)
+                    return;
+                switch (position){
+                    case 1:
+                        goToUserProfile();
+                        break;
+                    case 2:
+                        goToMatches();
+                        break;
+                    case 3:
+                        logOut();
+                        break;
+                }
+                isSpinnerTouched = false;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
+    private void goToUserProfile(){
+        Intent intent = new Intent(MyPetsActivity.this, UserRegistrationActivity.class);
+        intent.putExtra("isEdit", true);
+        intent.putExtra("activityName", "MyPetActivity");
+        startActivity(intent);
+        finish();
+    }
+    private void goToMatches(){
+        Intent intent = new Intent(MyPetsActivity.this, MyMatchesActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void logOut(){
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1){
+            mAuth.signOut();
+        }
+        Intent intent = new Intent(MyPetsActivity.this, OpenActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private boolean wasHere(){
+        Intent intent = getIntent();
+        String prevActivity = intent.getStringExtra("prevActivity");
+        return prevActivity.equals("PetProfileActivity");
     }
 }

@@ -44,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
     private String email, password;
     private User appUser;
     private List<Pet> petList;
+    private Utility utils;
 
 
     @Override
@@ -58,13 +59,12 @@ public class LoginActivity extends AppCompatActivity {
         login_btn = (Button) findViewById(R.id.login_btn);
         acnt_btn = (Button) findViewById(R.id.new_acnt_btn);
         appUser = User.getInstance();
+        utils = new Utility();
         petList = new ArrayList<Pet>();
         acnt_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, UserRegistrationActivity.class);
-                startActivity(intent);
-                finish();
+                goToRegistration();
             }
         });
 
@@ -168,17 +168,21 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-    private void saveToSharedPref(String userEmail){
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("email", userEmail);
-        editor.apply();
-    }
+//    private void saveToSharedPref(String userEmail){
+//        SharedPreferences sharedPreferences = getSharedPreferences(
+//                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+//
+//        SharedPreferences.Editor editor = sharedPreferences.edit();
+//        editor.putString("email", userEmail);
+//        editor.apply();
+//    }
     private void goToMyPets(){
-        saveToSharedPref(email);
         Intent intent = new Intent(LoginActivity.this, MyPetsActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private void goToRegistration(){
+        Intent intent = new Intent(LoginActivity.this, UserRegistrationActivity.class);
         startActivity(intent);
         finish();
     }
@@ -192,6 +196,7 @@ public class LoginActivity extends AppCompatActivity {
                     appUser = dataSnapshot.getValue(User.class);
                     if(appUser.getEmail().equals(email) && appUser.getPassword().equals(password)) {
                         Toast.makeText(getApplicationContext(), "Hi " + appUser.getFirstName() + ". You are logged in.", Toast.LENGTH_SHORT).show();
+                        utils.setSPUser(getApplicationContext(), appUser);
                         goToMyPets();
                     }else {
                         Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
@@ -201,7 +206,6 @@ public class LoginActivity extends AppCompatActivity {
                     makeToast(getApplicationContext(), "Please make sure you register first");
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Toast.makeText(getApplicationContext(), "Failed to read value." +

@@ -21,9 +21,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.security.MessageDigest;
 
@@ -43,14 +45,18 @@ public class UserRegistrationActivity extends AppCompatActivity {
     private EditText mEmailView;
     private EditText mPasswordView;
     private EditText mPasswordRepeatView;
-    private Button mStartUseBtn;
-    private String email, passRepeat, password, fname ,lname, phone, emailHash;
-    private User u;
+    private Button mSaveBtn, mCancelBtn;
+    private String email, passRepeat, password, fname ,lname, phone, emailHash, prevActivity;
+    private User user;
+    private Intent prevIntent;
+    private boolean isEdit;
+    private Utility utils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_registration);
+        utils = new Utility();
         firebase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mFirstNameView = (EditText) findViewById(R.id.firstNameView);
@@ -59,17 +65,20 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mEmailView = (EditText) findViewById(R.id.emailView);
         mPasswordView = (EditText) findViewById(R.id.passView);
         mPasswordRepeatView = (EditText) findViewById(R.id.passRepeatView);
-        mStartUseBtn = (Button) findViewById(R.id.startUseBtn);
+        mSaveBtn = (Button) findViewById(R.id.saveRegBtn);
+        mCancelBtn = (Button) findViewById(R.id.cancelRegBtn);
         mFirstNameView.requestFocus();
-
-        mStartUseBtn.setOnClickListener(new View.OnClickListener() {
+        prevIntent = getIntent();
+        prevActivity = prevIntent.getStringExtra("activityName");
+        isEdit = prevIntent.getBooleanExtra("isEdit",false);
+        mSaveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View view) {
                 if (isValidRegistration()){
                     try {
-                        u = User.getInstance();
-                        u.instantiate(fname, lname, email, password, phone,null,null);
+                        user = User.getInstance();
+                        user.instantiate(fname, lname, email, password, phone,null,null);
                         emailHash = sha256(email);
                         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1){
                             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -93,6 +102,31 @@ public class UserRegistrationActivity extends AppCompatActivity {
                 }
             }
         });
+        mCancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(prevActivity.equals("MyPetActivity"))
+                startActivity(new Intent(UserRegistrationActivity.this, MyPetsActivity.class));
+                finish();
+            }
+        });
+
+        if(isEdit){
+            String hashedEmail = new Utility().getSPEmail();
+            DatabaseReference userRef = firebase.getReference().child("Users").child(hashedEmail);
+            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User tempUser = dataSnapshot.getValue(User.class);
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
     }
 
     private boolean isValidRegistration() {
@@ -224,12 +258,13 @@ public class UserRegistrationActivity extends AppCompatActivity {
     private void registerUser(){
         try {
             DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(emailHash);
-            usersDB.setValue(u).addOnCompleteListener(new OnCompleteListener<Void>() {
+            usersDB.setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
 
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
+                        utils.setSPUser(getApplicationContext(), user);
                         goToMyPets();
                     } else {
                         Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
@@ -241,17 +276,8 @@ public class UserRegistrationActivity extends AppCompatActivity {
         }
     }
     private void goToMyPets(){
-        saveToSharedPref(email);
         Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void saveToSharedPref(String email){
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("email", email);
-        editor.apply();
     }
 }
