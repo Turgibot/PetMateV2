@@ -67,7 +67,7 @@ public class PetProfileActivity extends AppCompatActivity {
     private String selectedType, selectedAge, selectedGender, selectedLooking, selectedPurpose, selectedArea;
     private static final int PERMISIONS = 101;
     private Uri imageUri;
-    private boolean isEditMode;
+    private boolean isEdit;
     private Pet editablePet;
     private User user;
     private Utility utils;
@@ -91,7 +91,7 @@ public class PetProfileActivity extends AppCompatActivity {
         cancelBtn = (Button)findViewById(R.id.cancelProfileBtn);
         saveBtn = (Button) findViewById(R.id.saveProfileBtn);
         petName = (EditText)findViewById(R.id.petName);
-        isEditMode = getEditMode();
+        isEdit = getIsEdit();
 
 
         final ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
@@ -113,7 +113,6 @@ public class PetProfileActivity extends AppCompatActivity {
         setAdapterAndListener(purposeAdapter, purposeSpinner);
         setAdapterAndListener(areaAdapter, areaSpinner);
         setAdapterAndListener(ageAdapter, ageSpinner);
-        isEditMode = getEditMode();
         setDefaultValues();
 
 
@@ -144,8 +143,7 @@ public class PetProfileActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap bitmap;
-                if(imageUri == null && !isEditMode){
+                if(imageUri == null && !isEdit){
                     makeToast(getApplicationContext(), "Please set your pets profile image first!");
                     return;
                 }
@@ -154,18 +152,12 @@ public class PetProfileActivity extends AppCompatActivity {
                 if(!isTextValid(petName, currPetName)){
                     return;
                 }
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 1; // shrink it down otherwise we will use stupid amounts of memory
-                if(isEditMode){
-                    bitmap= ((BitmapDrawable)photoView.getDrawable()).getBitmap();
-                }else{
-                    bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
+                if(!currPetName.equals(editablePet.getName())){
+                    deletePet();
                 }
 
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-                byte[] bytes = baos.toByteArray();
-                String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+
+                String base64Image = getBase64Image();
                 Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
                 String hashedEmail = sha256(user.getEmail());
                 usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -173,14 +165,7 @@ public class PetProfileActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             makeToast(getApplicationContext(), "successfully updated "+currPetName+" to your pets");
-                            cancelBtn.setBackgroundResource(R.drawable.back_red_btn);
-                            saveBtn.setBackgroundResource(R.drawable.add_a_pet);
-                            saveBtn.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-
-                                }
-                            });
+                            goToMyPets();
                         }else{
                             makeToast(getApplicationContext(),"Error when adding pet");
                         }
@@ -209,17 +194,6 @@ public class PetProfileActivity extends AppCompatActivity {
     private void setAdapterAndListener(final ArrayAdapter<String> adapter, Spinner spinner){
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(PetProfileActivity.this, "selected: "+adapter.getItem(position), Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
     }
     private void goToMyPets(){
         Intent intent = new Intent(PetProfileActivity.this, MyPetsActivity.class);
@@ -241,7 +215,7 @@ public class PetProfileActivity extends AppCompatActivity {
     }
 
     private void setDefaultValues(){
-        if(isEditMode){
+        if(isEdit){
             editablePet = utils.getSPPet(getApplicationContext());
             areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
             ageSpinner.setSelection(getIndex(editablePet.getAge(), ageOptions));
@@ -271,9 +245,10 @@ public class PetProfileActivity extends AppCompatActivity {
         selectedType = typeSpinner.getSelectedItem().toString();
         selectedAge = ageSpinner.getSelectedItem().toString();
     }
-    private boolean getEditMode(){
+    private boolean getIsEdit(){
         Intent intent = getIntent();
-        return intent.getBooleanExtra("isEdit",false);
+        Boolean isEdit = intent.getBooleanExtra(getString(R.string.is_edit),false);
+        return (isEdit == null)?false:isEdit;
     }
     private int getIndex(String value, final String[] options ){
         int i = 0;
@@ -291,5 +266,30 @@ public class PetProfileActivity extends AppCompatActivity {
         options.outWidth = 200;
         Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length, options);
         photoView.setImageBitmap(decodedImage);
+    }
+    private String getBase64Image(){
+        Bitmap bitmap;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1; // shrink it down otherwise we will use stupid amounts of memory
+
+        if(isEdit){
+            bitmap= ((BitmapDrawable)photoView.getDrawable()).getBitmap();
+        }else{
+            bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] bytes = baos.toByteArray();
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
+    }
+    private void deletePet(){
+        usersRef.child(sha256(user.getEmail())).child("Pets").child(editablePet.getName()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(!task.isSuccessful()){
+                    makeToast(getApplicationContext(), "Error at deletePet");
+                }
+            }
+        });
     }
 }

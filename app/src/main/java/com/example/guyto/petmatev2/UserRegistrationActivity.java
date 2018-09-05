@@ -28,10 +28,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 
+import static com.example.guyto.petmatev2.R.string.my_pets_activity;
 import static com.example.guyto.petmatev2.Utility.containsDigitAndLetterOnly;
 import static com.example.guyto.petmatev2.Utility.isPureNum;
 import static com.example.guyto.petmatev2.Utility.isPureString;
+import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 
 
@@ -46,11 +50,12 @@ public class UserRegistrationActivity extends AppCompatActivity {
     private EditText mPasswordView;
     private EditText mPasswordRepeatView;
     private Button mSaveBtn, mCancelBtn;
-    private String email, passRepeat, password, fname ,lname, phone, emailHash, prevActivity;
+    private String email, passRepeat, password, fname ,lname, phone, emailHash, prevEmail;
     private User user;
     private Intent prevIntent;
     private boolean isEdit;
     private Utility utils;
+    private ArrayList<Pet> petList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,32 +73,42 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mSaveBtn = (Button) findViewById(R.id.saveRegBtn);
         mCancelBtn = (Button) findViewById(R.id.cancelRegBtn);
         mFirstNameView.requestFocus();
-        prevIntent = getIntent();
-        prevActivity = prevIntent.getStringExtra("activityName");
-        isEdit = prevIntent.getBooleanExtra("isEdit",false);
+        isEdit = getIsEdit();
+        petList = new ArrayList<>();
+        if(isEdit){
+            user = utils.getSPUser(getApplicationContext());
+            displayUserInfo();
+        }
+
         mSaveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View view) {
+
                 if (isValidRegistration()){
                     try {
                         user = User.getInstance();
                         user.instantiate(fname, lname, email, password, phone,null,null);
                         emailHash = sha256(email);
-                        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1){
-                            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if (task.isSuccessful()){
-                                        registerUser();
-                                    }else{
-                                        Toast.makeText(getApplicationContext(),"Authentication incomplete", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
+                        if(isEdit){
+                            copyPetsThenDeleteUser();
                         }else{
-                            registerUser();
+                            if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1){
+                                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (task.isSuccessful()){
+                                            registerUser();
+                                        }else{
+                                            Toast.makeText(getApplicationContext(),"Authentication incomplete", Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                });
+                            }else{
+                                registerUser();
+                            }
                         }
+
 
 
                     }catch(Exception e){
@@ -105,28 +120,11 @@ public class UserRegistrationActivity extends AppCompatActivity {
         mCancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(prevActivity.equals("MyPetActivity"))
-                startActivity(new Intent(UserRegistrationActivity.this, MyPetsActivity.class));
-                finish();
+               goBack();
             }
         });
 
-        if(isEdit){
-            String hashedEmail = new Utility().getSPEmail();
-            DatabaseReference userRef = firebase.getReference().child("Users").child(hashedEmail);
-            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    User tempUser = dataSnapshot.getValue(User.class);
 
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        }
     }
 
     private boolean isValidRegistration() {
@@ -265,6 +263,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "registration successful", Toast.LENGTH_LONG).show();
                         utils.setSPUser(getApplicationContext(), user);
+                        savePets();
                         goToMyPets();
                     } else {
                         Toast.makeText(getApplicationContext(), "registration failed", Toast.LENGTH_LONG).show();
@@ -279,5 +278,98 @@ public class UserRegistrationActivity extends AppCompatActivity {
         Intent intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
         startActivity(intent);
         finish();
+    }
+    private void goBack(){
+        Intent prevIntent = getIntent();
+        Intent intent = new Intent(UserRegistrationActivity.this, LoginActivity.class);
+        String prevActivity = prevIntent.getStringExtra(getString(R.string.prev_activity));
+        if (prevActivity != null) {
+            if (prevActivity.equals(getString(R.string.my_pets_activity))) {
+                intent = new Intent(UserRegistrationActivity.this, MyPetsActivity.class);
+            }
+        }
+          startActivity(intent);
+
+    }
+    private boolean getIsEdit(){
+        Intent intent = getIntent();
+        Boolean isEdit = intent.getBooleanExtra(getString(R.string.is_edit),false);
+        return (isEdit == null)?false:isEdit;
+    }
+    private void displayUserInfo(){
+        mFirstNameView.setText(user.getFirstName());
+        mLastNameView.setText(user.getLastName());
+        mPhoneView.setText(user.getPhone());
+        mEmailView.setText(user.getEmail());
+        mPasswordView.setText("");
+        mPasswordRepeatView.setText("");
+        prevEmail = user.getEmail();
+
+    }
+   private void copyPetsThenDeleteUser(){
+        DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(sha256(prevEmail));
+        usersDB.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DataSnapshot petRef = dataSnapshot.child("Pets");
+                if (petRef.getChildrenCount() != 0){
+
+                    for(DataSnapshot child: petRef.getChildren()){
+                        petList.add(child.getValue(Pet.class));
+                    }
+                }
+                if(!user.getEmail().equals(prevEmail))
+                    deleteUser();
+
+                registerUser();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+    private void deleteUser() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            FirebaseUser fBUser = mAuth.getCurrentUser();
+            fBUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (!task.isSuccessful()) {
+                        makeToast(getApplicationContext(), "error at deleteUser ");
+                    }
+                }
+            });
+        }
+        DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(sha256(prevEmail));
+        usersDB.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful()) {
+                    makeToast(getApplicationContext(), "error at deleteUser ");
+                }
+            }
+        });
+    }
+    private void savePets(){
+        if(petList == null){
+            return;
+        }
+        DatabaseReference petRef = firebase.getReference(getString(R.string.users)).child(sha256(user.getEmail())).child("Pets");
+        for(Pet p : petList){
+            petRef.child(p.getName()).setValue(p).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(!task.isSuccessful()){
+                        makeToast(getApplicationContext(), "error at savePets ");
+                    }
+                }
+            });
+        }
+
+
     }
 }

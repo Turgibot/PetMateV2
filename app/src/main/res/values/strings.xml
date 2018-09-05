@@ -41,5 +41,8 @@
     <string name="startusing">startusing</string>
     <string name="users">Users</string>
     <string name="preference_file_key">com.guy.petmatev2.2018</string>
+    <string name="prev_activity">prevActivity</string>
+    <string name="my_pets_activity">MyPetsActivity</string>
+    <string name="is_edit">isEdit</string>
 
 </resources>

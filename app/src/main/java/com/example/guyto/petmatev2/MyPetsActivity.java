@@ -38,8 +38,8 @@ import static com.example.guyto.petmatev2.Utility.sha256;
 import static java.lang.StrictMath.abs;
 //TODO cancel click on photo and on edit profile if no pets
 public class MyPetsActivity extends AppCompatActivity {
-    private FirebaseAuth mAuth;
     private FirebaseDatabase database;
+    private FirebaseAuth mAuth;
     private DatabaseReference usersRef;
     private String email;
     private User user;
@@ -159,7 +159,6 @@ public class MyPetsActivity extends AppCompatActivity {
             intent.putExtra("isEdit",true);
         }else{
             intent.putExtra("isEdit",false);
-
         }
         startActivity(intent);
         finish();
@@ -193,6 +192,7 @@ public class MyPetsActivity extends AppCompatActivity {
         infoText.setText(info);
     }
     private void displayDefaultInfo(){
+        petProfileImg.setImageResource(R.drawable.silhouette);
         nameText.setText("Your Pet's Name");
         String info = "Click on the \"Add a pet\" button to add your pets";
         infoText.setText(info);
@@ -245,7 +245,7 @@ public class MyPetsActivity extends AppCompatActivity {
     private void goToUserProfile(){
         Intent intent = new Intent(MyPetsActivity.this, UserRegistrationActivity.class);
         intent.putExtra("isEdit", true);
-        intent.putExtra("activityName", "MyPetActivity");
+        intent.putExtra(getString(R.string.prev_activity), "MyPetsActivity");
         startActivity(intent);
         finish();
     }
@@ -265,6 +265,9 @@ public class MyPetsActivity extends AppCompatActivity {
     private boolean wasHere(){
         Intent intent = getIntent();
         String prevActivity = intent.getStringExtra("prevActivity");
+        if(prevActivity==null){
+            return false;
+        }
         return prevActivity.equals("PetProfileActivity");
     }
 }
