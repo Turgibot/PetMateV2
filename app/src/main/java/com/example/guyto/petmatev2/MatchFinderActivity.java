@@ -33,83 +33,88 @@ import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.concurrent.Semaphore;
 
 import static com.example.guyto.petmatev2.Utility.sha256;
 
 
 public class MatchFinderActivity extends Activity{
-    private ArrayList<String> al;
-    private ArrayAdapter<String> arrayAdapter;
-    private int i;
+
+
+    private int index;
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
     private ArrayList<Pet> petList;
     private PetAdapter petAdapter;
-    private String srcPetName, hashedEmail, instructionStr, lastStr;
+    private String instructionStr, lastStr;
     private Pet srcPet, lastPet, selectedPet, firstPet;
     private User srcUser;
-    static Semaphore mutex;
     private Button backBtn;
     private boolean isDataReady;
     private SwipeFlingAdapterView flingContainer;
+    private Utility utils;
+    private boolean listIsReady, isRight;
+    private int numOfPets;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match_finder);
-        mutex = new Semaphore(1);
-        mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference(getString(R.string.users));
-        hashedEmail = sha256(getSPEmail());
-        getSrcUser(hashedEmail);
+        utils = new Utility();
+        isRight = false;
+        srcUser = utils.getSPUser(getApplicationContext());
+        srcPet = utils.getSPPet(getApplicationContext());
         instructionStr = "Swipe right to Like\nLeft tp pass";
         lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
-        srcPetName = getSrcPetName();
         isDataReady = false;
         petList = new ArrayList<>();
         firstPet = new Pet("Example", "",instructionStr,"","","","",getSilhouete(),null);
         lastPet = new Pet("Yeah!!!", "",lastStr,"","","","",firstPet.getImage(),null);
         petList.add(firstPet);
+        populatePetListByPreference();
         petAdapter = new PetAdapter(this, petList );
-
         flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
-
         flingContainer.setAdapter(petAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
             public void removeFirstObjectInAdapter() {
-                // this is the simplest way to delete an object from the Adapter (/AdapterView)
-                Log.d("LIST", "removed object!");
+                makeToast(getApplicationContext(), petList.get(0).getName());
+                if(isRight){
+                    boolean isMatch = registerAndMatch();
+                }
                 petList.remove(0);
-                makeToast(getApplicationContext(), "count: "+petList.size());
                 petAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onLeftCardExit(Object dataObject) {
-                //Do something on the left!
-                //You petList so have access to the original object.
-                //If you want to use it just cast it (String) dataObject
-                makeToast(MatchFinderActivity.this, "Left!");
+                isRight = false;
             }
 
             @Override
             public void onRightCardExit(Object dataObject) {
-                makeToast(MatchFinderActivity.this, "Right!");
+                isRight = true;
             }
 
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 // Ask for more data here
-                makeToast(getApplicationContext(), "itemsInAdapter: "+itemsInAdapter);
-
-                petList.add(lastPet);
+                if(listIsReady)
+                {
+                    petList.add(lastPet);
+                    listIsReady = false;
+                }
+                if(petList.isEmpty()){
+                    goToMyMatches();
+                }
+                //makeToast(getApplicationContext(), "itemsInAdapter: "+itemsInAdapter);
                 petAdapter.notifyDataSetChanged();
-                Log.d("LIST", "notified");
-                i++;
+                index++;
             }
 
             @Override
@@ -117,14 +122,6 @@ public class MatchFinderActivity extends Activity{
             }
         });
 
-
-        // Optionally add an OnItemClickListener
-        flingContainer.setOnItemClickListener(new SwipeFlingAdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClicked(int itemPosition, Object dataObject) {
-                makeToast(MatchFinderActivity.this, "Clicked!");
-            }
-        });
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,53 +135,6 @@ public class MatchFinderActivity extends Activity{
         Toast.makeText(ctx, s, Toast.LENGTH_SHORT).show();
     }
 
-    private String getSPEmail(){
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPreferences.getString("email", "errorGettingEmail");
-    }
-    private String getSrcPetName(){
-        Intent intent = getIntent();
-        return intent.getStringExtra("petName");
-
-    }
-    private void getSrcUser(String hashedEmail){
-
-        DatabaseReference userQuery = usersRef.child(hashedEmail).getRef();
-        userQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot){
-                try {
-                    srcUser = dataSnapshot.getValue(User.class);
-                    getSrcPetAndPetList(dataSnapshot, srcPetName);
-
-                } catch (Exception e) {
-                    srcUser = null;
-                    Toast.makeText(getApplicationContext(), "getSrcUser is null -> Failed to read value." +
-                            e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "getSrcUser: Failed to read value." +
-                        databaseError.toException(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private void getSrcPetAndPetList(DataSnapshot snapshot, String petName){
-        for(DataSnapshot dataSnapshot: snapshot.child("Pets").getChildren()){
-            Pet p = dataSnapshot.getValue(Pet.class);
-            if(p.getName().equals(petName)){
-                srcPet = p;
-                break;
-            }
-        }
-        if(srcPet!= null)
-            populatePetListByPreference();
-    }
     private void populatePetListByPreference(){
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -192,14 +142,19 @@ public class MatchFinderActivity extends Activity{
                 try {
                     for(DataSnapshot userSnapSHot : dataSnapshot.getChildren()){
                         User u = userSnapSHot.getValue(User.class);
-                        if(!sha256(u.getEmail()).equals(hashedEmail)){
+                        if(!sha256(u.getEmail()).equals(sha256(srcUser.getEmail()))){
                             for(DataSnapshot petSnapshot: userSnapSHot.child("Pets").getChildren()){
                                 Pet p = petSnapshot.getValue(Pet.class);
-                                if(p.getGender().equals(srcPet.getLookingFor()) && p.getType().equals(srcPet.getType()))
+                                if(!p.getType().equals(srcPet.getType()))
+                                    continue;
+                                if(p.getGender().equals(srcPet.getLookingFor())||srcPet.getLookingFor().equals("Any")){
                                     petList.add(p);
+                                }
                             }
                         }
                     }
+                    listIsReady = true;
+                    numOfPets = petList.size();
                 } catch (Exception e) {
                     petList = null;
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
@@ -276,5 +231,25 @@ public class MatchFinderActivity extends Activity{
         Intent intent = new Intent(MatchFinderActivity.this, MyPetsActivity.class);
         startActivity(intent);
         finish();
+    }
+    private void goToMyMatches(){
+        Intent intent = new Intent(MatchFinderActivity.this, MyMatchesActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    private boolean registerAndMatch(){
+        return true;
+    }
+    class MatchingPet extends Pet{
+        private String userEmail;
+
+        public MatchingPet(){
+            super();
+            userEmail = "";
+        }
+        public MatchingPet(String userEmail, String name, String age, String type, String gender, String lookingFor, String purpose, String area, String image, Dictionary<String, ArrayList<String>> likesDict){
+            super(name, age, type, gender, lookingFor, purpose, area, image, likesDict);
+            this.userEmail = userEmail;
+        }
     }
 }

@@ -108,4 +108,8 @@ public class Pet {
     public void setLikesDict(Dictionary<String, ArrayList<String>> likesDict) {
         this.likesDict = likesDict;
     }
+    public void addToLikes(String userEmail, String petName){
+        ArrayList<String> likesList = this.likesDict.get(userEmail);
+        likesList.add(petName);
+    }
 }
