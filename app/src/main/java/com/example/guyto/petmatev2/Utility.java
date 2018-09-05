@@ -105,18 +105,29 @@ public class Utility extends AppCompatActivity{
         return user;
     }
     public void setSPPet(Context context, Pet pet){
+
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 "com.guy.petmatev2.2018", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("name", pet.getName());
-        editor.putString("purpose", pet.getPurpose());
-        editor.putString("looking", pet.getLookingFor());
-        editor.putString("gender", pet.getGender());
-        editor.putString("age", pet.getAge());
-        editor.putString("area", pet.getArea());
-        editor.putString("image", pet.getImage());
-        editor.putString("type", pet.getType());
-
+        if(pet == null){
+            editor.putString("name", "");
+            editor.putString("purpose", "");
+            editor.putString("looking", "");
+            editor.putString("gender", "");
+            editor.putString("age", "");
+            editor.putString("area", "");
+            editor.putString("image", "");
+            editor.putString("type", "");
+        }else{
+            editor.putString("name", pet.getName());
+            editor.putString("purpose", pet.getPurpose());
+            editor.putString("looking", pet.getLookingFor());
+            editor.putString("gender", pet.getGender());
+            editor.putString("age", pet.getAge());
+            editor.putString("area", pet.getArea());
+            editor.putString("image", pet.getImage());
+            editor.putString("type", pet.getType());
+        }
         editor.apply();
     }
 

@@ -177,9 +177,18 @@ public class MyPetsActivity extends AppCompatActivity {
     }
 
     private void displayPetInfo(Pet pet){
+        if(pet == null) {
+            if (petList != null) {
+                pet = petList.get(0);
+            } else {
+                displayDefaultInfo();
+                return;
+            }
+        }
         displayImage(pet.getImage());
         nameText.setText(pet.getName());
         displayInfo(pet.getAge(), pet.getGender(), pet.getType(), pet.getArea(), pet.getLookingFor(), pet.getPurpose());
+
     }
 
     private void displayImage(String imageStr){

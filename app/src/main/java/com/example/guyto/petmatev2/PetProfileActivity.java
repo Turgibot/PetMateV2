@@ -56,7 +56,7 @@ public class PetProfileActivity extends AppCompatActivity {
     private DatabaseReference usersRef;
     private ImageView photoView;
     private EditText petName;
-    private Button cancelBtn, saveBtn;
+    private Button cancelBtn, saveBtn, deleteBtn;
     private Spinner typeSpinner, genderSpinner, lookingSpinner, purposeSpinner, areaSpinner, ageSpinner;
     private static final String[] typeOptions = {"Dog", "Cat", "Pig", "Horse", "Donkey", "Other"};
     private static final String[] ageOptions = {"less than a","1", "2", "3", "4", "5", "6", "7", "8", "9","older than 10","older than 20","older than 30","older than 50",};
@@ -90,6 +90,7 @@ public class PetProfileActivity extends AppCompatActivity {
         ageSpinner = (Spinner)findViewById(R.id.ageSpinner);
         cancelBtn = (Button)findViewById(R.id.cancelProfileBtn);
         saveBtn = (Button) findViewById(R.id.saveProfileBtn);
+        deleteBtn = (Button)findViewById(R.id.deletePetBtn);
         petName = (EditText)findViewById(R.id.petName);
         isEdit = getIsEdit();
 
@@ -139,6 +140,12 @@ public class PetProfileActivity extends AppCompatActivity {
                 goToMyPets();
             }
         });
+        deleteBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateSPPetAndDelete();
+            }
+        });
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,19 +159,18 @@ public class PetProfileActivity extends AppCompatActivity {
                 if(!isTextValid(petName, currPetName)){
                     return;
                 }
-                if(!currPetName.equals(editablePet.getName())){
+                if(isEdit && !currPetName.equals(editablePet.getName())){
                     deletePet();
                 }
-
-
                 String base64Image = getBase64Image();
-                Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
+                final Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
                 String hashedEmail = sha256(user.getEmail());
                 usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             makeToast(getApplicationContext(), "successfully updated "+currPetName+" to your pets");
+                            utils.setSPPet(getApplicationContext(), pet);
                             goToMyPets();
                         }else{
                             makeToast(getApplicationContext(),"Error when adding pet");
@@ -216,6 +222,7 @@ public class PetProfileActivity extends AppCompatActivity {
 
     private void setDefaultValues(){
         if(isEdit){
+            deleteBtn.setVisibility(View.VISIBLE);
             editablePet = utils.getSPPet(getApplicationContext());
             areaSpinner.setSelection(getIndex(editablePet.getArea(), areaOptions));
             ageSpinner.setSelection(getIndex(editablePet.getAge(), ageOptions));
@@ -288,8 +295,35 @@ public class PetProfileActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()){
                     makeToast(getApplicationContext(), "Error at deletePet");
+                }else{
+                    goToMyPets();
                 }
             }
         });
+    }
+    private void updateSPPetAndDelete(){
+        usersRef.child(sha256(user.getEmail())).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DataSnapshot petRef = dataSnapshot.child("Pets");
+
+                for(DataSnapshot child: petRef.getChildren()){
+                    Pet p = child.getValue(Pet.class);
+                    if(!editablePet.getName().equals(p.getName())){
+                        utils.setSPPet(getApplicationContext(), p);
+                        deletePet();
+                        return;
+                    }
+                }
+                deletePet();
+                utils.setSPPet(getApplicationContext(), null);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
 }
