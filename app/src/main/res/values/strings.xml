@@ -44,6 +44,8 @@
     <string name="prev_activity">prevActivity</string>
     <string name="my_pets_activity">MyPetsActivity</string>
     <string name="pet_profile_activity">PetProfileActivity</string>
+    <string name="likes">Likes</string>
+
 
     <string name="is_edit">isEdit</string>
 

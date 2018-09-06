@@ -1,8 +1,5 @@
 package com.example.guyto.petmatev2;
 
-import com.example.guyto.petmatev2.Match;
-import com.example.guyto.petmatev2.Pet;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +13,7 @@ public class User {
     private String password;
     private String phone;
     private List<Pet> pets;
-    private List<Match> matches;
+    private List<Like> likes;
 
 
 
@@ -27,24 +24,24 @@ public class User {
         this.password = "";
         this.phone = "";
         this.pets = null;
-        this.matches = null;
+        this.likes = null;
     }
 
-    public User(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Match> matches) {
+    public User(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Like> likes) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.phone = phone;
         this.pets = pets;
-        this.matches = matches;
+        this.likes = likes;
     }
-    public List<Match> getMatches() {
-        return matches;
+    public List<Like> getLikes() {
+        return likes;
     }
 
-    public void setMatches(List<Match> matches) {
-        this.matches = matches;
+    public void setLikes(List<Like> likes) {
+        this.likes = likes;
     }
 
     public String getFirstName() {
@@ -100,6 +97,12 @@ public class User {
             this.pets = new ArrayList<>();
         }
         this.pets.add(p);
+    }
+    public void addToLikes(Like like){
+        if(this.likes == null){
+            this.likes = new ArrayList<>();
+        }
+        this.likes.add(like);
     }
 
 }

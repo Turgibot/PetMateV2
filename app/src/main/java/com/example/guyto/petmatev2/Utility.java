@@ -144,8 +144,8 @@ public class Utility extends AppCompatActivity{
         String type = sharedPreferences.getString("type", "");
         String image = sharedPreferences.getString("image", "");
 
-        return new Pet(name,age,type,gender,looking,purpose,area,image,null);
+        return new Pet(name,age,type,gender,looking,purpose,area,image);
     }
-    //public void goToMyPets(Context c, Activity src, )
+
 
 }

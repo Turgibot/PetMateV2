@@ -163,7 +163,7 @@ public class PetProfileActivity extends AppCompatActivity {
                     deletePet();
                 }
                 String base64Image = getBase64Image();
-                final Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image, null);
+                final Pet pet = new Pet(currPetName, selectedAge, selectedType, selectedGender, selectedLooking, selectedPurpose, selectedArea, base64Image);
                 String hashedEmail = sha256(user.getEmail());
                 usersRef.child(hashedEmail).child("Pets").child(currPetName).setValue(pet).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override

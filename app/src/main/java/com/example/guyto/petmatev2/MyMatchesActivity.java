@@ -1,6 +1,7 @@
 package com.example.guyto.petmatev2;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,10 +21,18 @@ public class MyMatchesActivity extends AppCompatActivity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //utils.goToMyPets(getApplicationContext(), MyMatchesActivity.this);
-                makeToast(getApplicationContext(), "MyMatchesActivity.this:"MyMatchesActivity.this);
+                goToMyPets();
             }
         });
+
+
+    }
+
+
+    private void goToMyPets(){
+        Intent in = new Intent(MyMatchesActivity.this, MyPetsActivity.class);
+        startActivity(in);
+        finish();
     }
 
 }
