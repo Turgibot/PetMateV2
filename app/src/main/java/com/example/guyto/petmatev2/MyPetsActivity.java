@@ -277,6 +277,6 @@ public class MyPetsActivity extends AppCompatActivity {
         if(prevActivity==null){
             return false;
         }
-        return prevActivity.equals("PetProfileActivity");
+        return prevActivity.equals(getString(R.string.pet_profile_activity));
     }
 }

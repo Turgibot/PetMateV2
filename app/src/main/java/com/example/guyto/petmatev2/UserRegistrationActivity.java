@@ -87,8 +87,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
 
                 if (isValidRegistration()){
                     try {
-                        user = User.getInstance();
-                        user.instantiate(fname, lname, email, password, phone,null,null);
+                        user = new User(fname, lname, email, password, phone,null,null);
                         emailHash = sha256(email);
                         if(isEdit){
                             copyPetsThenDeleteUser();

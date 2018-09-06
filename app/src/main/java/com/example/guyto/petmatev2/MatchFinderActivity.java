@@ -42,21 +42,21 @@ import static com.example.guyto.petmatev2.Utility.sha256;
 public class MatchFinderActivity extends Activity{
 
 
-    private int index;
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private DatabaseReference usersRef;
     private ArrayList<Pet> petList;
     private PetAdapter petAdapter;
     private String instructionStr, lastStr;
-    private Pet srcPet, lastPet, selectedPet, firstPet;
-    private User srcUser;
+    private Pet srcPet, lastPet, selectedPet, firstPet, viewedPet;
+    private User srcUser, firstUser, lastUser;
+    private ArrayList<User> userList;
     private Button backBtn;
     private boolean isDataReady;
     private SwipeFlingAdapterView flingContainer;
     private Utility utils;
     private boolean listIsReady, isRight;
-    private int numOfPets;
+    private int numOfMatches;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,28 +66,45 @@ public class MatchFinderActivity extends Activity{
         usersRef = database.getReference(getString(R.string.users));
         utils = new Utility();
         isRight = false;
-        srcUser = utils.getSPUser(getApplicationContext());
-        srcPet = utils.getSPPet(getApplicationContext());
         instructionStr = "Swipe right to Like\nLeft tp pass";
         lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
         isDataReady = false;
+        numOfMatches = 0;
+        srcUser = utils.getSPUser(getApplicationContext());
+        srcPet = utils.getSPPet(getApplicationContext());
         petList = new ArrayList<>();
+        userList = new ArrayList<>();
         firstPet = new Pet("Example", "",instructionStr,"","","","",getSilhouete(),null);
         lastPet = new Pet("Yeah!!!", "",lastStr,"","","","",firstPet.getImage(),null);
+        firstUser = new User();
+        lastUser = new User();
+        firstUser.addPet(firstPet);
+        lastUser.addPet(lastPet);
+        userList.add(firstUser);
         petList.add(firstPet);
         populatePetListByPreference();
-        petAdapter = new PetAdapter(this, petList );
+        petAdapter = new PetAdapter(this, userList);
         flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
         flingContainer.setAdapter(petAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
             public void removeFirstObjectInAdapter() {
-                makeToast(getApplicationContext(), petList.get(0).getName());
+                viewedPet = userList.get(0).getPets().get(0);
                 if(isRight){
                     boolean isMatch = registerAndMatch();
+                    makeToast(getApplicationContext(), "righth");
                 }
-                petList.remove(0);
+
+                userList.get(0).getPets().remove(0);
+                //petList.remove(0);
+                if(userList.get(0).getPets().size()==0){
+                    userList.remove(0);
+                }
+                if(userList.isEmpty()){
+                    goToMyMatches();
+                    return;
+                }
                 petAdapter.notifyDataSetChanged();
             }
 
@@ -106,15 +123,13 @@ public class MatchFinderActivity extends Activity{
                 // Ask for more data here
                 if(listIsReady)
                 {
-                    petList.add(lastPet);
+                    userList.add(lastUser);
                     listIsReady = false;
                 }
-                if(petList.isEmpty()){
-                    goToMyMatches();
-                }
+
+                //petList.add(userList.get(0).getPets().get(0));
                 //makeToast(getApplicationContext(), "itemsInAdapter: "+itemsInAdapter);
                 petAdapter.notifyDataSetChanged();
-                index++;
             }
 
             @Override
@@ -143,18 +158,23 @@ public class MatchFinderActivity extends Activity{
                     for(DataSnapshot userSnapSHot : dataSnapshot.getChildren()){
                         User u = userSnapSHot.getValue(User.class);
                         if(!sha256(u.getEmail()).equals(sha256(srcUser.getEmail()))){
+                            ArrayList<Pet> userPetList = new ArrayList();
                             for(DataSnapshot petSnapshot: userSnapSHot.child("Pets").getChildren()){
                                 Pet p = petSnapshot.getValue(Pet.class);
                                 if(!p.getType().equals(srcPet.getType()))
                                     continue;
                                 if(p.getGender().equals(srcPet.getLookingFor())||srcPet.getLookingFor().equals("Any")){
-                                    petList.add(p);
+                                    userPetList.add(p);
+                                    numOfMatches++;
                                 }
+                            }
+                            if(userPetList.size()>0){
+                                u.setPets(userPetList);
+                                userList.add(u);
                             }
                         }
                     }
                     listIsReady = true;
-                    numOfPets = petList.size();
                 } catch (Exception e) {
                     petList = null;
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
@@ -171,24 +191,25 @@ public class MatchFinderActivity extends Activity{
     }
     class PetAdapter extends ArrayAdapter<Pet> {
         Activity context;
-        ArrayList<Pet> pets;
+        ArrayList<User> users;
         private LayoutInflater inflater;
 
 
-        public PetAdapter(Activity context, ArrayList<Pet> pets) {
-            super(context,R.layout.item, pets);
+        public PetAdapter(Activity context, ArrayList<User> users) {
+
+            super(context,R.layout.item, users.get(0).getPets());
             this.context = context;
-            this.pets = pets;
+            this.users = users;
             inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
         @Override
         public int getCount(){
-            return pets.size();
+            return users.get(0).getPets().size();
         }
 
         @Override
         public Pet getItem(int position) {
-            return pets.get(position);
+            return users.get(0).getPets().get(position);
         }
 
         @Override
@@ -202,7 +223,7 @@ public class MatchFinderActivity extends Activity{
             TextView textViewName = (TextView)itemView.findViewById(R.id.flingName);
             TextView textViewInfo = (TextView)itemView.findViewById(R.id.flingInfo);
             ImageView profileImageView = (ImageView)itemView.findViewById(R.id.flingImage);
-            selectedPet = pets.get(position);
+            selectedPet = users.get(0).getPets().get(position);
             textViewName.setText(selectedPet.getName());
             String info;
             if(selectedPet == lastPet)
@@ -240,16 +261,5 @@ public class MatchFinderActivity extends Activity{
     private boolean registerAndMatch(){
         return true;
     }
-    class MatchingPet extends Pet{
-        private String userEmail;
 
-        public MatchingPet(){
-            super();
-            userEmail = "";
-        }
-        public MatchingPet(String userEmail, String name, String age, String type, String gender, String lookingFor, String purpose, String area, String image, Dictionary<String, ArrayList<String>> likesDict){
-            super(name, age, type, gender, lookingFor, purpose, area, image, likesDict);
-            this.userEmail = userEmail;
-        }
-    }
 }

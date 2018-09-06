@@ -4,6 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorMainDark"
     tools:context=".MyMatchesActivity">
 
+    <Button
+        android:id="@+id/my_matches_back_btn"
+        android:layout_width="88dp"
+        android:layout_height="47dp"
+        android:background="@drawable/back_btn"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="215dp"
+        android:layout_height="45dp"
+        app:srcCompat="@drawable/my_matches"
+        tools:layout_editor_absoluteX="129dp"
+        tools:layout_editor_absoluteY="16dp" />
 </android.support.constraint.ConstraintLayout>

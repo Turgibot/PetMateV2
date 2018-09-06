@@ -1,4 +1,5 @@
 package com.example.guyto.petmatev2;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.annotations.Nullable;
+import io.reactivex.internal.operators.completable.CompletableFromAction;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -100,8 +102,7 @@ public class Utility extends AppCompatActivity{
         String email = sharedPreferences.getString("email", "");
         String phone = sharedPreferences.getString("phone", "");
         String password = sharedPreferences.getString("password", "");
-        User user = User.getInstance();
-        user.instantiate(firstName, lastName, email, password, phone, null, null);
+        User user = new User(firstName, lastName, email, password, phone, null, null);
         return user;
     }
     public void setSPPet(Context context, Pet pet){
@@ -145,5 +146,6 @@ public class Utility extends AppCompatActivity{
 
         return new Pet(name,age,type,gender,looking,purpose,area,image,null);
     }
+    //public void goToMyPets(Context c, Activity src, )
 
 }

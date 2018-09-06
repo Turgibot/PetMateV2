@@ -3,12 +3,12 @@ package com.example.guyto.petmatev2;
 import com.example.guyto.petmatev2.Match;
 import com.example.guyto.petmatev2.Pet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class User {
 
-    private static User singletonUser;
 
     private String firstName;
     private String lastName;
@@ -20,7 +20,7 @@ public class User {
 
 
 
-    private User(){
+    public User(){
         this.firstName = "";
         this.lastName = "";
         this.email = "";
@@ -29,13 +29,8 @@ public class User {
         this.pets = null;
         this.matches = null;
     }
-    public static User getInstance(){
-        if(singletonUser == null){
-            singletonUser = new User();
-        }
-        return singletonUser;
-    }
-    public void instantiate(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Match> matches) {
+
+    public User(String firstName, String lastName, String email, String password, String phone, List<Pet> pets, List<Match> matches) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -101,6 +96,9 @@ public class User {
     }
 
     public void addPet(Pet p){
+        if(this.pets == null){
+            this.pets = new ArrayList<>();
+        }
         this.pets.add(p);
     }
 

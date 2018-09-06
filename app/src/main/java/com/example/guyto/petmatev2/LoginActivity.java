@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordView = (EditText) findViewById(R.id.login_pass);
         login_btn = (Button) findViewById(R.id.login_btn);
         acnt_btn = (Button) findViewById(R.id.new_acnt_btn);
-        appUser = User.getInstance();
+        appUser = new User();
         utils = new Utility();
         petList = new ArrayList<Pet>();
         acnt_btn.setOnClickListener(new View.OnClickListener() {
