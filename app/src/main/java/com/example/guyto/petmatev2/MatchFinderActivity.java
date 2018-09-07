@@ -37,11 +37,13 @@ import com.google.firebase.database.ValueEventListener;
 import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Dictionary;
 import java.util.concurrent.Semaphore;
 
+import static com.example.guyto.petmatev2.Utility.makeToast;
 import static com.example.guyto.petmatev2.Utility.sha256;
 
 
@@ -93,6 +95,7 @@ public class MatchFinderActivity extends Activity{
         lastUser.addPet(lastPet);
         userList.add(firstUser);
         petList.add(firstPet);
+        addPrevLikesToSrcUser();
         populatePetListByPreference();
         petAdapter = new PetAdapter(this, userList);
         flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
@@ -131,12 +134,16 @@ public class MatchFinderActivity extends Activity{
                 }
                 Like like = new Like(viewedUser.getEmail(), viewedPet.getName(), srcPet.getName(),false);
                 if(matchFound()){
-                    showAlert();
-                    setMatchAtTarget(viewedUser.getEmail(), viewedPet.getName());
                     like.setHasMatch(true);
+                    showAlert();
+                    if(!isAlreadyMatched(like, viewedUser)){
+                        setMatchAtTarget(viewedUser.getEmail(), viewedPet.getName());
+                    }
                 }
-                srcUser.addToLikes(like);
-                updateLikeInDB();
+                if(!isInLikes(like)){
+                    srcUser.addToLikes(like);
+                    updateLikeInDB();
+                }
             }
 
             @Override
@@ -163,9 +170,6 @@ public class MatchFinderActivity extends Activity{
 
     }
 
-    static void makeToast(Context ctx, String s){
-        Toast.makeText(ctx, s, Toast.LENGTH_SHORT).show();
-    }
 
     private void populatePetListByPreference(){
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -185,23 +189,25 @@ public class MatchFinderActivity extends Activity{
                                     numOfMatches++;
                                 }
                             }
-                            if(userPetList.size()>0){
+                            if(userPetList.size()>0) {
                                 u.setPets(userPetList);
-                                if(userSnapSHot.child(getString(R.string.likes)).getChildrenCount()>0){
-                                    ArrayList<Like> userLikes = new ArrayList<>();
-                                    for(DataSnapshot likeSnapShot: userSnapSHot.child(getString(R.string.likes)).getChildren()){
-                                        Like l = likeSnapShot.getValue(Like.class);
-                                        userLikes.add(l);
-                                    }
-                                    u.setLikes(userLikes);
-                                }
-                                userList.add(u);
                             }
+
+                            DataSnapshot userLikesSnapShot = userSnapSHot.child(getString(R.string.likes));
+                            try {
+                                for(DataSnapshot likeSnapShot: userLikesSnapShot.getChildren()){
+                                    Like l = likeSnapShot.getValue(Like.class);
+                                    u.addToLikes(l);
+                                }
+                            }catch (Exception e){
+                                Like l = userLikesSnapShot.getValue(Like.class);
+                                u.addToLikes(l);
+                            }
+                            userList.add(u);
                         }
                     }
                     listIsReady = true;
                 } catch (Exception e) {
-                    petList = null;
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
                             e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -261,6 +267,9 @@ public class MatchFinderActivity extends Activity{
     }
 
     private void updateSrcUserLikes(){
+        if(srcUser.getLikes().isEmpty()){
+            return;
+        }
         usersRef.child(sha256(srcUser.getEmail())).child("Likes")
                 .setValue(srcUser.getLikes()).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -285,15 +294,23 @@ public class MatchFinderActivity extends Activity{
     }
 
     private void setMatchAtTarget(final String targetEmail, final String targetPetName){
-        usersRef.child(sha256(targetEmail)).child("Likes").addListenerForSingleValueEvent(new ValueEventListener() {
+        usersRef.child(sha256(targetEmail)).child(getString(R.string.likes)).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot likeSnapShot : dataSnapshot.getChildren()){
-                    Like like = likeSnapShot.getValue(Like.class);
+
+                try {
+                    for(DataSnapshot likeSnapShot: dataSnapshot.getChildren()){
+                        Like like = likeSnapShot.getValue(Like.class);
+                        if(like.targetUserEmail.equals(srcUser.getEmail())&& like.targetPetName.equals(srcPet.getName()) && like.srcPetName.equals(targetPetName)){
+                            likeSnapShot.getRef().removeValue();
+                            reInsertAsMatch(targetEmail, like);
+                            return;
+                        }                    }
+                }catch (Exception e){
+                    Like like = dataSnapshot.getValue(Like.class);
                     if(like.targetUserEmail.equals(srcUser.getEmail())&& like.targetPetName.equals(srcPet.getName()) && like.srcPetName.equals(targetPetName)){
-                        likeSnapShot.getRef().removeValue();
+                        dataSnapshot.getRef().removeValue();
                         reInsertAsMatch(targetEmail, like);
-                        return;
                     }
                 }
             }
@@ -329,6 +346,14 @@ public class MatchFinderActivity extends Activity{
                 }
             }
         });
+//        usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.likes)).setValue(srcUser.getLikes()).addOnCompleteListener(new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                if(!task.isSuccessful()){
+//                    makeToast(getApplicationContext(), "Error at updateLikeInDB when saving likes");
+//                }
+//            }
+//        });
     }
 
     private void saveLikesAtSrcUser(){
@@ -341,6 +366,60 @@ public class MatchFinderActivity extends Activity{
             }
         });
     }
+
+    private void addPrevLikesToSrcUser(){
+        usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.likes)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    for(DataSnapshot likeSnapShot: dataSnapshot.getChildren()){
+                        Like l = likeSnapShot.getValue(Like.class);
+                        srcUser.addToLikes(l);
+                    }
+                }catch (Exception e){
+                    Like l = dataSnapshot.getValue(Like.class);
+                    srcUser.addToLikes(l);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private boolean isInLikes(Like like){
+        if(srcUser.getLikes() == null){
+            return false;
+        }
+         for(Like userLike : srcUser.getLikes()){
+             if(userLike.equals(like)){
+                 return true;
+             }
+         }
+         return false;
+    }
+
+    private boolean isAlreadyMatched(Like srcLike, User targetUser){
+        if(targetUser.getLikes()== null || srcUser.getLikes() == null){
+            return false;
+        }
+        Like tempTarget = new Like(srcUser.getEmail(),srcLike.srcPetName,srcLike.targetPetName,true);
+        for(Like targetLike : targetUser.getLikes()){
+            if(targetLike.equals(tempTarget)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+
+
 
 
 
@@ -402,4 +481,5 @@ public class MatchFinderActivity extends Activity{
         }
 
     }
+
 }

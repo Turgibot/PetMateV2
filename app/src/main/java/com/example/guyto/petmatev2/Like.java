@@ -1,5 +1,7 @@
 package com.example.guyto.petmatev2;
 
+import java.util.Objects;
+
 public class Like {
 
     String targetUserEmail;
@@ -52,4 +54,16 @@ public class Like {
     public void setHasMatch(Boolean hasMatch) {
         this.hasMatch = hasMatch;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Like)) return false;
+        Like like = (Like) o;
+        return  this.getTargetUserEmail().equals(like.getTargetUserEmail()) &&
+                this.getTargetPetName().equals(like.getTargetPetName()) &&
+                this.getSrcPetName().equals(like.getSrcPetName()) &&
+                this.getHasMatch().equals(like.getHasMatch());
+    }
+
 }
