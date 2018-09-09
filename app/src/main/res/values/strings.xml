@@ -6,11 +6,11 @@
     <string name="my_pet_profile">my_pet_profile</string>
     <string name="med_frame">med_frame</string>
     <string name="slogan">slogan</string>
-    <string name="pets">pets</string>
+    <string name="pets">Pets</string>
     <string name="name">Your pets name...</string>
     <string name="type">type</string>
     <string name="gender">gender</string>
-    <string name="lookingfoe">lookingfor</string>
+    <string name="looking_for">lookingfor</string>
     <string name="purpose">purpose</string>
     <string name="area">area</string>
     <string name="first_name">First Name</string>

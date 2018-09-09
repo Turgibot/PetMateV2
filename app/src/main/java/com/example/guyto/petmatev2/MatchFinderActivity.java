@@ -64,7 +64,6 @@ public class MatchFinderActivity extends Activity{
     private SwipeFlingAdapterView flingContainer;
     private Utility utils;
     private boolean listIsReady, isRight;
-    private int numOfMatches;
     private Like targetLike;
 
     //private AlertDialog.Builder builder;
@@ -82,7 +81,6 @@ public class MatchFinderActivity extends Activity{
         lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
         isDataReady = false;
-        numOfMatches = 0;
         srcUser = utils.getSPUser(getApplicationContext());
         srcPet = utils.getSPPet(getApplicationContext());
         petList = new ArrayList<>();
@@ -186,7 +184,6 @@ public class MatchFinderActivity extends Activity{
                                     continue;
                                 if(p.getGender().equals(srcPet.getLookingFor())||srcPet.getLookingFor().equals("Any")){
                                     userPetList.add(p);
-                                    numOfMatches++;
                                 }
                             }
                             if(userPetList.size()>0) {
@@ -286,7 +283,7 @@ public class MatchFinderActivity extends Activity{
             return false;
         }
         for(Like viewedLike : viewedUser.getLikes()){
-            if(viewedLike.srcPetName.equals(viewedPet.getName())&& viewedLike.targetPetName.equals(srcPet.getName()) && viewedLike.targetUserEmail.equals(srcUser.getEmail())){
+            if(viewedLike.getSrcPetName().equals(viewedPet.getName())&& viewedLike.getTargetPetName().equals(srcPet.getName()) && viewedLike.getTargetUserEmail().equals(srcUser.getEmail())){
                 return true;
             }
         }
@@ -301,14 +298,14 @@ public class MatchFinderActivity extends Activity{
                 try {
                     for(DataSnapshot likeSnapShot: dataSnapshot.getChildren()){
                         Like like = likeSnapShot.getValue(Like.class);
-                        if(like.targetUserEmail.equals(srcUser.getEmail())&& like.targetPetName.equals(srcPet.getName()) && like.srcPetName.equals(targetPetName)){
+                        if(like.getTargetUserEmail().equals(srcUser.getEmail())&& like.getTargetPetName().equals(srcPet.getName()) && like.getSrcPetName().equals(targetPetName)){
                             likeSnapShot.getRef().removeValue();
                             reInsertAsMatch(targetEmail, like);
                             return;
                         }                    }
                 }catch (Exception e){
                     Like like = dataSnapshot.getValue(Like.class);
-                    if(like.targetUserEmail.equals(srcUser.getEmail())&& like.targetPetName.equals(srcPet.getName()) && like.srcPetName.equals(targetPetName)){
+                    if(like.getTargetUserEmail().equals(srcUser.getEmail())&& like.getTargetPetName().equals(srcPet.getName()) && like.getSrcPetName().equals(targetPetName)){
                         dataSnapshot.getRef().removeValue();
                         reInsertAsMatch(targetEmail, like);
                     }
@@ -405,7 +402,7 @@ public class MatchFinderActivity extends Activity{
         if(targetUser.getLikes()== null || srcUser.getLikes() == null){
             return false;
         }
-        Like tempTarget = new Like(srcUser.getEmail(),srcLike.srcPetName,srcLike.targetPetName,true);
+        Like tempTarget = new Like(srcUser.getEmail(),srcLike.getSrcPetName(),srcLike.getTargetPetName(),true);
         for(Like targetLike : targetUser.getLikes()){
             if(targetLike.equals(tempTarget)){
                 return true;

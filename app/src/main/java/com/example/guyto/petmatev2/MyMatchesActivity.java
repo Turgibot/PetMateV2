@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -49,7 +50,10 @@ public class MyMatchesActivity extends AppCompatActivity {
         usersRef = database.getReference(getString(R.string.users));
         utils = new Utility();
         srcUser = utils.getSPUser(getApplicationContext());
-        matchesAdapter = new MatchesAdapter(this, matches);
+        srcUserPets = new ArrayList<>();
+        targetPets = new ArrayList<>();
+        targetUsers = new ArrayList<>();
+        matches = new ArrayList<>();
         listView = (ListView)findViewById(R.id.matches_list_view);
         backBtn = (Button)findViewById(R.id.my_matches_back_btn);
         matchesPB = (ProgressBar)findViewById(R.id.matches_progress_bar);
@@ -59,7 +63,6 @@ public class MyMatchesActivity extends AppCompatActivity {
                 goToMyPets();
             }
         });
-        //listView.setAdapter(matchesAdapter);
         isDataReady = false;
 
         new Thread(new Runnable() {
@@ -91,11 +94,18 @@ public class MyMatchesActivity extends AppCompatActivity {
            public void onDataChange(DataSnapshot dataSnapshot) {
                try {
                    for (DataSnapshot likeSnapShot : dataSnapshot.getChildren()) {
-                       srcUser.addToLikes(likeSnapShot.getValue(Like.class));
+                       Like l = likeSnapShot.getValue(Like.class);
+                       if(l.getHasMatch()){
+                           srcUser.addToLikes(l);
+                       }
                    }
                }catch (ExceptionInInitializerError e){
-                   srcUser.addToLikes(dataSnapshot.getValue(Like.class));
+                   Like l = dataSnapshot.getValue(Like.class);
+                   if(l.getHasMatch()){
+                       srcUser.addToLikes(l);
+                   }
                }
+               populateLikeInfo();
            }
 
            @Override
@@ -104,6 +114,149 @@ public class MyMatchesActivity extends AppCompatActivity {
            }
        });
     }
+
+    private void populateLikeInfo(){
+        if(srcUser.getLikes()==null){
+            return;
+        }
+        for(Like like : srcUser.getLikes()){
+            String targetEmail = like.getTargetUserEmail();
+            String targetPetName = like.getTargetPetName();
+            String srcPetName = like.getSrcPetName();
+            User targetUser = new User();
+            targetUser.setEmail(targetEmail);
+            Pet srcPet = new Pet();
+            srcPet.setName(srcPetName);
+            Pet targetPet = new Pet();
+            targetPet.setName(targetPetName);
+            Match match = new Match(targetUser, srcPet, targetPet);
+            matches.add(match);
+
+        }
+        populateSrcUserPet();
+    }
+
+    private void populateSrcUserPet(){
+        usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.pets)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot child: dataSnapshot.getChildren()){
+                    srcUserPets.add(child.getValue(Pet.class));
+                }
+                populateTargetUserPet();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void populateTargetUserPet(){
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                try {
+                    for(DataSnapshot userSnapSHot : dataSnapshot.getChildren()){
+                        User u = userSnapSHot.getValue(User.class);
+                        if(isEmailInLikes(u.getEmail())){
+                            ArrayList<Pet> userPetList = new ArrayList();
+                            for(DataSnapshot petSnapshot: userSnapSHot.child("Pets").getChildren()){
+                                Pet p = petSnapshot.getValue(Pet.class);
+                                if(isNameInLikes(u.getEmail(),p.getName())){
+                                    userPetList.add(p);
+                                }
+                            }
+                            if(userPetList.size()>0) {
+                                u.setPets(userPetList);
+                            }
+
+                            targetUsers.add(u);
+                        }
+                    }
+                    reorganizeInfo();
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
+                            e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private boolean isEmailInLikes(String email){
+        for(Like l : srcUser.getLikes()){
+            if(l.getTargetUserEmail().equals(email)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNameInLikes(String email, String petName){
+        for(Like l : srcUser.getLikes()){
+            if(l.getTargetUserEmail().equals(email) && l.getTargetPetName().equals(petName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void reorganizeInfo(){
+        for(Match match: matches){
+            match.setUser(getUserByEmail(match.getUser().getEmail()));
+            match.setSrcPet(getSrcPetByName(match.getSrcPet().getName()));
+            match.setTargetPet(getTargetPetByName(match.getUser(),match.getTargetPet().getName()));
+        }
+        isDataReady = true;
+        matchesPB.setVisibility(View.GONE);
+        matchesAdapter = new MatchesAdapter(this, matches);
+        listView.setAdapter(matchesAdapter);
+
+    }
+
+    private User getUserByEmail(String userEmail){
+        for(User u : targetUsers){
+            if(u.getEmail().equals(userEmail)){
+                return u;
+            }
+        }
+        return new User();
+    }
+
+    private Pet getSrcPetByName(String petName){
+        for(Pet p : srcUserPets){
+            if(p.getName().equals(petName)){
+                return p;
+            }
+        }
+        return new Pet();
+    }
+
+    private Pet getTargetPetByName(User targetUser, String petName){
+        for(Pet p : targetUser.getPets()){
+            if(p.getName().equals(petName)){
+                return p;
+            }
+        }
+        return new Pet();
+    }
+
+
+
+
+
+
+
+
+
+
 
     //--------------------------------------------------------------------------------------------//
 
@@ -138,10 +291,10 @@ public class MyMatchesActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View itemView = inflater.inflate(R.layout.item, parent, false);
+            View itemView = inflater.inflate(R.layout.list_view_matches, parent, false);
             TextView textViewName = (TextView)itemView.findViewById(R.id.matched_pet_name);
             TextView textViewInfo = (TextView)itemView.findViewById(R.id.matched_pet_info);
-            ImageView profileImageView = (ImageView)itemView.findViewById(R.id.matched_pet_name);
+            ImageView profileImageView = (ImageView)itemView.findViewById(R.id.match_pet_image);
             Button removeBtn = (Button)itemView.findViewById(R.id.remove_like);
             Button smsBtn = (Button)itemView.findViewById(R.id.sms_btn);
             Match match = matches.get(position);
@@ -150,7 +303,7 @@ public class MyMatchesActivity extends AppCompatActivity {
             final Pet targetPet = match.getTargetPet();
             String likeStr = srcPet.getName()+" likes "+targetPet.getName()+" !!!";
             textViewName.setText(likeStr);
-            String info = "A "+targetPet.getAge()+ "year old "+targetPet.getGender()+" "+targetPet.getType();
+            String info = "A "+targetPet.getAge()+ " year old "+targetPet.getGender()+" "+targetPet.getType();
             textViewInfo.setText(info);
             byte[] imageBytes = Base64.decode(targetPet.getImage(), Base64.DEFAULT);
             Bitmap decodedImage = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);

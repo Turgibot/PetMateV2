@@ -93,7 +93,7 @@ public class MyPetsActivity extends AppCompatActivity {
             usersRef.child(sha256(email)).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    DataSnapshot petRef = dataSnapshot.child("Pets");
+                    DataSnapshot petRef = dataSnapshot.child(getString(R.string.pets));
                     if (petRef.getChildrenCount() == 0){
                         editProfBtn.setVisibility(View.INVISIBLE);
                         petProfileImg.setClickable(false);

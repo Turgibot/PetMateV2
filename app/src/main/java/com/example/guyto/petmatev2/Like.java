@@ -4,10 +4,10 @@ import java.util.Objects;
 
 public class Like {
 
-    String targetUserEmail;
-    String targetPetName;
-    String srcPetName;
-    Boolean hasMatch;
+    private String targetUserEmail;
+    private String targetPetName;
+    private String srcPetName;
+    private Boolean hasMatch;
 
     public Like(String targetUserEmail, String targetPetName, String srcPetName , Boolean hasMatch) {
         this.targetUserEmail = targetUserEmail;
