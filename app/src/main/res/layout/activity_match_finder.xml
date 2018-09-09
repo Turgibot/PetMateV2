@@ -73,5 +73,21 @@
         app:rotation_degrees="15.5"
         tools:context=".MyActivity" />
 
+    <ProgressBar
+        android:id="@+id/match_finder_pb"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="200dp"
+        android:layout_height="198dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

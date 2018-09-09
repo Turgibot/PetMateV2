@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,8 +66,8 @@ public class MatchFinderActivity extends Activity{
     private Utility utils;
     private boolean listIsReady, isRight;
     private Like targetLike;
+    private ProgressBar pb;
 
-    //private AlertDialog.Builder builder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +81,7 @@ public class MatchFinderActivity extends Activity{
         instructionStr = "Swipe right to Like\nLeft tp pass";
         lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
+        pb = (ProgressBar)findViewById(R.id.match_finder_pb);
         isDataReady = false;
         srcUser = utils.getSPUser(getApplicationContext());
         srcPet = utils.getSPPet(getApplicationContext());
@@ -97,12 +99,8 @@ public class MatchFinderActivity extends Activity{
         populatePetListByPreference();
         petAdapter = new PetAdapter(this, userList);
         flingContainer = (SwipeFlingAdapterView) findViewById(R.id.frame) ;
+        flingContainer.setVisibility(View.INVISIBLE);
         flingContainer.setAdapter(petAdapter);
-
-
-
-
-
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
             @Override
             public void removeFirstObjectInAdapter() {
@@ -148,10 +146,10 @@ public class MatchFinderActivity extends Activity{
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
                 if(listIsReady)
                 {
-                    userList.add(lastUser);
+//                    userList.add(lastUser);
                     listIsReady = false;
                 }
-                petAdapter.notifyDataSetChanged();
+               // petAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -187,23 +185,26 @@ public class MatchFinderActivity extends Activity{
                                 }
                             }
                             if(userPetList.size()>0) {
-                                u.setPets(userPetList);
-                            }
-
-                            DataSnapshot userLikesSnapShot = userSnapSHot.child(getString(R.string.likes));
-                            try {
-                                for(DataSnapshot likeSnapShot: userLikesSnapShot.getChildren()){
-                                    Like l = likeSnapShot.getValue(Like.class);
-                                    u.addToLikes(l);
+                                DataSnapshot userLikesSnapShot = userSnapSHot.child(getString(R.string.likes));
+                                    try {
+                                        for(DataSnapshot likeSnapShot: userLikesSnapShot.getChildren()){
+                                            Like l = likeSnapShot.getValue(Like.class);
+                                            u.addToLikes(l);
+                                        }
+                                    }catch (Exception e){
+                                        Like l = userLikesSnapShot.getValue(Like.class);
+                                        u.addToLikes(l);
+                                    }
                                 }
-                            }catch (Exception e){
-                                Like l = userLikesSnapShot.getValue(Like.class);
-                                u.addToLikes(l);
-                            }
-                            userList.add(u);
+                                u.setPets(userPetList);
+                                userList.add(u);
                         }
                     }
+                    userList.add(lastUser);
                     listIsReady = true;
+                    flingContainer.setVisibility(View.VISIBLE);
+                    pb.setVisibility(View.GONE);
+
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
                             e.getMessage(), Toast.LENGTH_SHORT).show();

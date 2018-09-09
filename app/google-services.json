@@ -8,6 +8,50 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:719246302745:android:bf83f0ef198e8a59",
+        "android_client_info": {
+          "package_name": "com.example.guyto.petapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "719246302745-aen6l3ftiek1maicftql5q8va37jikqu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.guyto.petapplication",
+            "certificate_hash": "08fb07a9759a76005e4e81dba217bff1f56a00b8"
+          }
+        },
+        {
+          "client_id": "719246302745-re31fhsmo4u3ejt85esi5665qfkqcqt8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgMp4I4EriS-BN66wsLcMKSSbLH51W_4g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "719246302745-re31fhsmo4u3ejt85esi5665qfkqcqt8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:719246302745:android:47011460fb642b08",
         "android_client_info": {
           "package_name": "com.example.guyto.petmatev2"
@@ -20,6 +64,14 @@
           "android_info": {
             "package_name": "com.example.guyto.petmatev2",
             "certificate_hash": "6a05913fb9adf49e9c3fc5d64c7cb49c3e54ee04"
+          }
+        },
+        {
+          "client_id": "719246302745-t6k81hu28pcam5radj8tdb456klrsl2n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.guyto.petmatev2",
+            "certificate_hash": "08fb07a9759a76005e4e81dba217bff1f56a00b8"
           }
         },
         {
