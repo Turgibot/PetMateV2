@@ -63,7 +63,6 @@ public class MatchFinderActivity extends Activity{
     private User srcUser, firstUser, lastUser, viewedUser;
     private ArrayList<User> userList;
     private Button backBtn;
-    private boolean isDataReady;
     private SwipeFlingAdapterView flingContainer;
     private Utility utils;
     private Like targetLike;
@@ -85,7 +84,6 @@ public class MatchFinderActivity extends Activity{
         Drawable progressDrawable = pb.getIndeterminateDrawable().mutate();
         progressDrawable.setColorFilter(Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN);
         pb.setProgressDrawable(progressDrawable);
-        isDataReady = false;
         srcUser = utils.getSPUser(getApplicationContext());
         srcPet = utils.getSPPet(getApplicationContext());
         petList = new ArrayList<>();

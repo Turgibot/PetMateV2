@@ -2,14 +2,17 @@ package com.example.guyto.petmatev2;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -321,6 +324,47 @@ public class MyMatchesActivity extends AppCompatActivity {
         });
     }
 
+    private void smsUser(Match match) {
+        final String phoneNo = "+972"+match.getUser().getPhone().substring(1);
+        final String msg = "Hi "+match.getUser().getFirstName()+" "+ match.getUser().getLastName()+".\nMy name is "+srcUser.getFirstName()+" "+
+                srcUser.getLastName()+". I was just on Pet-mate and found out that my pet "+match.getSrcPet().getName()+" and your pet "+
+                match.getTargetPet().getName()+" are a match.\nWould you like to meet?";
+        AlertDialog.Builder builder = new AlertDialog.Builder(MyMatchesActivity.this);
+
+        builder.setCancelable(true);
+        builder.setTitle("Send an SMS?");
+        builder.setMessage(msg);
+
+        builder.setNegativeButton("Maybe Later", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        builder.setPositiveButton("Send now", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                sendSMS(phoneNo, msg);
+            }
+        });
+        builder.show();
+
+    }
+
+    private void sendSMS(String phoneNo, String msg){
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, msg, null, null);
+            Toast.makeText(getApplicationContext(), "Message Sent",
+                    Toast.LENGTH_LONG).show();
+        } catch (Exception ex) {
+            Toast.makeText(getApplicationContext(),ex.getMessage().toString(),
+                    Toast.LENGTH_LONG).show();
+            ex.printStackTrace();
+        }
+    }
+
 
 
 
@@ -395,7 +439,7 @@ public class MyMatchesActivity extends AppCompatActivity {
             smsBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //smsUser(user name , user phone, srcpet name)
+                    smsUser(match);
                 }
             });
             return itemView;
