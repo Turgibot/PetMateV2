@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -64,7 +66,6 @@ public class MatchFinderActivity extends Activity{
     private boolean isDataReady;
     private SwipeFlingAdapterView flingContainer;
     private Utility utils;
-    private boolean listIsReady, isRight;
     private Like targetLike;
     private ProgressBar pb;
 
@@ -76,12 +77,14 @@ public class MatchFinderActivity extends Activity{
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference(getString(R.string.users));
         utils = new Utility();
-        isRight = false;
         targetLike = null;
         instructionStr = "Swipe right to Like\nLeft tp pass";
         lastStr = "That's all folks \nCome again soon to find new mates!!";
         backBtn = (Button)findViewById(R.id.back_btn);
         pb = (ProgressBar)findViewById(R.id.match_finder_pb);
+        Drawable progressDrawable = pb.getIndeterminateDrawable().mutate();
+        progressDrawable.setColorFilter(Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN);
+        pb.setProgressDrawable(progressDrawable);
         isDataReady = false;
         srcUser = utils.getSPUser(getApplicationContext());
         srcPet = utils.getSPPet(getApplicationContext());
@@ -94,6 +97,7 @@ public class MatchFinderActivity extends Activity{
         firstUser.addPet(firstPet);
         lastUser.addPet(lastPet);
         userList.add(firstUser);
+        userList.add(lastUser);
         petList.add(firstPet);
         addPrevLikesToSrcUser();
         populatePetListByPreference();
@@ -120,7 +124,6 @@ public class MatchFinderActivity extends Activity{
 
             @Override
             public void onLeftCardExit(Object dataObject) {
-                isRight = false;
             }
 
             @Override
@@ -130,6 +133,9 @@ public class MatchFinderActivity extends Activity{
                 }
                 Like like = new Like(viewedUser.getEmail(), viewedPet.getName(), srcPet.getName(),false);
                 if(matchFound()){
+                    if(isInLikes(like)){
+                        srcUser.getLikes().remove(like);
+                    }
                     like.setHasMatch(true);
                     showAlert();
                     if(!isAlreadyMatched(like, viewedUser)){
@@ -144,12 +150,6 @@ public class MatchFinderActivity extends Activity{
 
             @Override
             public void onAdapterAboutToEmpty(int itemsInAdapter) {
-                if(listIsReady)
-                {
-//                    userList.add(lastUser);
-                    listIsReady = false;
-                }
-               // petAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -172,36 +172,37 @@ public class MatchFinderActivity extends Activity{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot){
                 try {
+                    userList.remove(1);
                     for(DataSnapshot userSnapSHot : dataSnapshot.getChildren()){
                         User u = userSnapSHot.getValue(User.class);
-                        if(!sha256(u.getEmail()).equals(sha256(srcUser.getEmail()))){
+                        if(!sha256(u.getEmail()).equals(sha256(srcUser.getEmail()))) {
                             ArrayList<Pet> userPetList = new ArrayList();
-                            for(DataSnapshot petSnapshot: userSnapSHot.child("Pets").getChildren()){
+                            for (DataSnapshot petSnapshot : userSnapSHot.child("Pets").getChildren()) {
                                 Pet p = petSnapshot.getValue(Pet.class);
-                                if(!p.getType().equals(srcPet.getType()))
+                                if (!p.getType().equals(srcPet.getType()))
                                     continue;
-                                if(p.getGender().equals(srcPet.getLookingFor())||srcPet.getLookingFor().equals("Any")){
+                                if (p.getGender().equals(srcPet.getLookingFor()) || srcPet.getLookingFor().equals("Any")) {
                                     userPetList.add(p);
                                 }
                             }
-                            if(userPetList.size()>0) {
+                            if (userPetList.size() > 0) {
                                 DataSnapshot userLikesSnapShot = userSnapSHot.child(getString(R.string.likes));
-                                    try {
-                                        for(DataSnapshot likeSnapShot: userLikesSnapShot.getChildren()){
-                                            Like l = likeSnapShot.getValue(Like.class);
-                                            u.addToLikes(l);
-                                        }
-                                    }catch (Exception e){
-                                        Like l = userLikesSnapShot.getValue(Like.class);
+                                try {
+                                    for (DataSnapshot likeSnapShot : userLikesSnapShot.getChildren()) {
+                                        Like l = likeSnapShot.getValue(Like.class);
                                         u.addToLikes(l);
                                     }
+                                } catch (Exception e) {
+                                    Like l = userLikesSnapShot.getValue(Like.class);
+                                    u.addToLikes(l);
                                 }
+
                                 u.setPets(userPetList);
                                 userList.add(u);
+                            }
                         }
                     }
                     userList.add(lastUser);
-                    listIsReady = true;
                     flingContainer.setVisibility(View.VISIBLE);
                     pb.setVisibility(View.GONE);
 
@@ -268,7 +269,7 @@ public class MatchFinderActivity extends Activity{
         if(srcUser.getLikes().isEmpty()){
             return;
         }
-        usersRef.child(sha256(srcUser.getEmail())).child("Likes")
+        usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.likes))
                 .setValue(srcUser.getLikes()).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -301,14 +302,16 @@ public class MatchFinderActivity extends Activity{
                         Like like = likeSnapShot.getValue(Like.class);
                         if(like.getTargetUserEmail().equals(srcUser.getEmail())&& like.getTargetPetName().equals(srcPet.getName()) && like.getSrcPetName().equals(targetPetName)){
                             likeSnapShot.getRef().removeValue();
-                            reInsertAsMatch(targetEmail, like);
+                            like.setHasMatch(true);
+                            likeSnapShot.getRef().setValue(like);
                             return;
                         }                    }
                 }catch (Exception e){
                     Like like = dataSnapshot.getValue(Like.class);
                     if(like.getTargetUserEmail().equals(srcUser.getEmail())&& like.getTargetPetName().equals(srcPet.getName()) && like.getSrcPetName().equals(targetPetName)){
                         dataSnapshot.getRef().removeValue();
-                        reInsertAsMatch(targetEmail, like);
+                        like.setHasMatch(true);
+                        dataSnapshot.getRef().setValue(like);
                     }
                 }
             }
@@ -320,18 +323,7 @@ public class MatchFinderActivity extends Activity{
         });
 
     }
-    private void reInsertAsMatch(final String targetEmail, Like like){
-        like.setHasMatch(true);
-        usersRef.child(sha256(targetEmail)).child(getString(R.string.likes)).setValue(like).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(!task.isSuccessful()){
-                    makeToast(getApplicationContext(), "Error at reInsertAsMatch");
-                }
-            }
-        });
 
-    }
 
     private void updateLikeInDB(){
         usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.likes)).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -344,14 +336,6 @@ public class MatchFinderActivity extends Activity{
                 }
             }
         });
-//        usersRef.child(sha256(srcUser.getEmail())).child(getString(R.string.likes)).setValue(srcUser.getLikes()).addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                if(!task.isSuccessful()){
-//                    makeToast(getApplicationContext(), "Error at updateLikeInDB when saving likes");
-//                }
-//            }
-//        });
     }
 
     private void saveLikesAtSrcUser(){
@@ -391,12 +375,12 @@ public class MatchFinderActivity extends Activity{
         if(srcUser.getLikes() == null){
             return false;
         }
-         for(Like userLike : srcUser.getLikes()){
-             if(userLike.equals(like)){
-                 return true;
-             }
-         }
-         return false;
+        for(Like userLike : srcUser.getLikes()){
+            if(userLike.equals(like)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isAlreadyMatched(Like srcLike, User targetUser){

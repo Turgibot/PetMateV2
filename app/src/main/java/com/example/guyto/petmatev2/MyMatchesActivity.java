@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -19,6 +22,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,11 +42,11 @@ public class MyMatchesActivity extends AppCompatActivity {
     private MatchesAdapter matchesAdapter;
     private ArrayList<Match> matches;
     private ListView listView;
-    private boolean isDataReady;
     private ProgressBar matchesPB;
     private User srcUser;
     private ArrayList<Pet> srcUserPets, targetPets;
     private ArrayList<User> targetUsers;
+    private ImageView noMatches;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,13 +62,16 @@ public class MyMatchesActivity extends AppCompatActivity {
         listView = (ListView)findViewById(R.id.matches_list_view);
         backBtn = (Button)findViewById(R.id.my_matches_back_btn);
         matchesPB = (ProgressBar)findViewById(R.id.matches_progress_bar);
+        noMatches = (ImageView)findViewById(R.id.matches_not_found);
+        Drawable progressDrawable = matchesPB.getIndeterminateDrawable().mutate();
+        progressDrawable.setColorFilter(Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN);
+        matchesPB.setProgressDrawable(progressDrawable);
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 goToMyPets();
             }
         });
-        isDataReady = false;
 
         new Thread(new Runnable() {
             @Override
@@ -117,6 +125,8 @@ public class MyMatchesActivity extends AppCompatActivity {
 
     private void populateLikeInfo(){
         if(srcUser.getLikes()==null){
+            noMatches.setVisibility(View.VISIBLE);
+            matchesPB.setVisibility(View.GONE);
             return;
         }
         for(Like like : srcUser.getLikes()){
@@ -170,12 +180,15 @@ public class MyMatchesActivity extends AppCompatActivity {
                             }
                             if(userPetList.size()>0) {
                                 u.setPets(userPetList);
+                                targetUsers.add(u);
                             }
-
-                            targetUsers.add(u);
                         }
                     }
-                    reorganizeInfo();
+                    matchesPB.setVisibility(View.GONE);
+                    if(targetUsers.size()>0){
+                        reorganizeInfo();
+                    }else{
+                        noMatches.setVisibility(View.VISIBLE);                    }
                 } catch (Exception e) {
                     Toast.makeText(getApplicationContext(), "petList is null -> Failed to read value." +
                             e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -214,8 +227,6 @@ public class MyMatchesActivity extends AppCompatActivity {
             match.setSrcPet(getSrcPetByName(match.getSrcPet().getName()));
             match.setTargetPet(getTargetPetByName(match.getUser(),match.getTargetPet().getName()));
         }
-        isDataReady = true;
-        matchesPB.setVisibility(View.GONE);
         matchesAdapter = new MatchesAdapter(this, matches);
         listView.setAdapter(matchesAdapter);
 
@@ -248,6 +259,67 @@ public class MyMatchesActivity extends AppCompatActivity {
         return new Pet();
     }
 
+    private void removeLike(String srcUserEmail, final String targetUserEmail, final String srcPetName, final String targetPetName){
+        usersRef.child(sha256(srcUserEmail)).child(getString(R.string.likes)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot likeDataSnapShot: dataSnapshot.getChildren()){
+                    Like l = likeDataSnapShot.getValue(Like.class);
+                    if(l.getTargetUserEmail().equals(targetUserEmail)&& l.getSrcPetName().equals(srcPetName) && l.getTargetPetName().equals(targetPetName)){
+                        likeDataSnapShot.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(!task.isSuccessful()){
+                                    makeToast(getApplicationContext(), "Error at removeLike");
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void removeHasMatch(String srcUserEmail, final String targetUserEmail, final String srcPetName, final String targetPetName){
+        usersRef.child(sha256(srcUserEmail)).child(getString(R.string.likes)).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot likeDataSnapShot: dataSnapshot.getChildren()){
+                    Like l = likeDataSnapShot.getValue(Like.class);
+                    if(l.getTargetUserEmail().equals(targetUserEmail)&& l.getSrcPetName().equals(srcPetName) && l.getTargetPetName().equals(targetPetName)){
+                        likeDataSnapShot.getRef().removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(!task.isSuccessful()){
+                                    makeToast(getApplicationContext(), "Error at removeHasMatch");
+                                }
+                            }
+                        });
+                        l.setHasMatch(false);
+                        likeDataSnapShot.getRef().setValue(l).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(!task.isSuccessful()){
+                                    makeToast(getApplicationContext(), "Error at removeHasMatch");
+                                }
+                            }
+                        });
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
 
 
@@ -297,9 +369,9 @@ public class MyMatchesActivity extends AppCompatActivity {
             ImageView profileImageView = (ImageView)itemView.findViewById(R.id.match_pet_image);
             Button removeBtn = (Button)itemView.findViewById(R.id.remove_like);
             Button smsBtn = (Button)itemView.findViewById(R.id.sms_btn);
-            Match match = matches.get(position);
+            final Match match = matches.get(position);
             final User user = match.getUser();
-            Pet srcPet = match.getSrcPet();
+            final Pet srcPet = match.getSrcPet();
             final Pet targetPet = match.getTargetPet();
             String likeStr = srcPet.getName()+" likes "+targetPet.getName()+" !!!";
             textViewName.setText(likeStr);
@@ -311,7 +383,13 @@ public class MyMatchesActivity extends AppCompatActivity {
             removeBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //removeLike(user.getEmail(), targetPet.getName());
+                    removeLike(srcUser.getEmail(), user.getEmail(), srcPet.getName(), targetPet.getName());
+                    removeHasMatch(user.getEmail(), srcUser.getEmail(), targetPet.getName(), srcPet.getName());
+                    matches.remove(match);
+                    matchesAdapter.notifyDataSetChanged();
+                    if(matches.isEmpty()){
+                        noMatches.setVisibility(View.VISIBLE);
+                    }
                 }
             });
             smsBtn.setOnClickListener(new View.OnClickListener() {
