@@ -1,3 +1,7 @@
+//--------------------------------------------------------------------------------------------------
+// this class handles creating , presenting and editing the pet profile
+//--------------------------------------------------------------------------------------------------
+
 package com.example.guyto.petmatev2;
 
 import android.Manifest;
@@ -81,6 +85,11 @@ public class PetProfileActivity extends AppCompatActivity {
         user = utils.getSPUser(getApplicationContext());
         database = FirebaseDatabase.getInstance();
         usersRef = database.getReference(getString(R.string.users));
+        deleteBtn = (Button)findViewById(R.id.deletePetBtn);
+        petName = (EditText)findViewById(R.id.petName);
+        isEdit = getIsEdit();
+
+        //field and spinners
         photoView = (ImageView) findViewById(R.id.photoView);
         genderSpinner = (Spinner) findViewById(R.id.genderSpinner);
         lookingSpinner = (Spinner) findViewById(R.id.lookingSpinner);
@@ -90,11 +99,9 @@ public class PetProfileActivity extends AppCompatActivity {
         ageSpinner = (Spinner)findViewById(R.id.ageSpinner);
         cancelBtn = (Button)findViewById(R.id.cancelProfileBtn);
         saveBtn = (Button) findViewById(R.id.saveProfileBtn);
-        deleteBtn = (Button)findViewById(R.id.deletePetBtn);
-        petName = (EditText)findViewById(R.id.petName);
-        isEdit = getIsEdit();
 
 
+        //array addapter for each spinner
         final ArrayAdapter<String> typeAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
                 android.R.layout.simple_spinner_item, typeOptions);
         final ArrayAdapter<String> genderAdapter = new ArrayAdapter<String>(PetProfileActivity.this,
@@ -147,6 +154,7 @@ public class PetProfileActivity extends AppCompatActivity {
             }
         });
 
+        // check validation and save pet info
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -193,6 +201,8 @@ public class PetProfileActivity extends AppCompatActivity {
 
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
+                makeToast(getApplicationContext(), "Error at onActivityResult"+ error.getMessage());
+
             }
         }
     }
@@ -301,6 +311,8 @@ public class PetProfileActivity extends AppCompatActivity {
             }
         });
     }
+
+
     private void updateSPPetAndDelete(){
         usersRef.child(sha256(user.getEmail())).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -321,7 +333,7 @@ public class PetProfileActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                makeToast(getApplicationContext(), "Error at updateSPPetAndDelete "+ databaseError.getMessage());
             }
         });
 

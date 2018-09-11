@@ -8,7 +8,7 @@ import android.widget.Button;
 
 
 public class OpenActivity extends AppCompatActivity {
-    private final int timeMS = 5;
+    private final int timeMS = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

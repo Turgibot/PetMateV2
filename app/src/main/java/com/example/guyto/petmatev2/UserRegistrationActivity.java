@@ -64,6 +64,8 @@ public class UserRegistrationActivity extends AppCompatActivity {
         utils = new Utility();
         firebase = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
+        //get fields reference
         mFirstNameView = (EditText) findViewById(R.id.firstNameView);
         mLastNameView = (EditText) findViewById(R.id.lastNameView);
         mPhoneView = (EditText) findViewById(R.id.phoneView);
@@ -84,7 +86,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
             @Override
 
             public void onClick(View view) {
-
+                //check that info is valid
                 if (isValidRegistration()){
                     try {
                         user = new User(fname, lname, email, password, phone,null,null);
@@ -251,7 +253,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
         return true;
     }
 
-
+    //register user in DB
     private void registerUser(){
         try {
             DatabaseReference usersDB = firebase.getReference(getString(R.string.users)).child(emailHash);
@@ -330,6 +332,7 @@ public class UserRegistrationActivity extends AppCompatActivity {
         });
 
     }
+
     private void deleteUser() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {

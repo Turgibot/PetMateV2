@@ -1,3 +1,7 @@
+//--------------------------------------------------------------------------------------------------
+//This class holds utility methods to be used anywhere in the app
+//--------------------------------------------------------------------------------------------------
+
 package com.example.guyto.petmatev2;
 import android.app.Activity;
 import android.content.Context;

@@ -121,6 +121,7 @@ public class MyMatchesActivity extends AppCompatActivity {
 
            @Override
            public void onCancelled(DatabaseError databaseError) {
+               makeToast(getApplicationContext(), "Error at populateMatches"+ databaseError.getMessage());
 
            }
        });
@@ -161,6 +162,7 @@ public class MyMatchesActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                makeToast(getApplicationContext(), "Error at populateSrcUserPet"+ databaseError.getMessage());
 
             }
         });
@@ -200,7 +202,7 @@ public class MyMatchesActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                makeToast(getApplicationContext(), "Error at populateTargetUserPet "+ databaseError.getMessage() );
             }
         });
     }
@@ -283,7 +285,7 @@ public class MyMatchesActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                makeToast(getApplicationContext(), "Error at removeLike"+ databaseError.getMessage());
             }
         });
     }
@@ -319,7 +321,7 @@ public class MyMatchesActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                makeToast(getApplicationContext(), "Error at removeHasMatch "+ databaseError.getMessage());
             }
         });
     }

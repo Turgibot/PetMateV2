@@ -1,3 +1,7 @@
+//--------------------------------------------------------------------------------------------------
+//Represents an objects that holds the information needed in order to describe a right swipe
+//--------------------------------------------------------------------------------------------------
+
 package com.example.guyto.petmatev2;
 
 import java.util.Objects;

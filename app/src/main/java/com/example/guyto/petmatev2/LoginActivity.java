@@ -1,8 +1,14 @@
+//--------------------------------------------------------------------------------------------------
+//Handles Login operations
+//--------------------------------------------------------------------------------------------------
+
 package com.example.guyto.petmatev2;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +19,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -45,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     private User appUser;
     private List<Pet> petList;
     private Utility utils;
+    private ProgressBar loginPB;
 
 
     @Override
@@ -58,9 +66,11 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordView = (EditText) findViewById(R.id.login_pass);
         login_btn = (Button) findViewById(R.id.login_btn);
         acnt_btn = (Button) findViewById(R.id.new_acnt_btn);
+        loginPB = (ProgressBar)findViewById(R.id.login_pb);
         appUser = new User();
         utils = new Utility();
         petList = new ArrayList<Pet>();
+
         acnt_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +82,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(validateInfo()){
+                    //if sdk >= 27 use fire base authentication
+                    loginPB.setVisibility(View.VISIBLE);
                     if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                         mAuthLogin();
                     }else {
@@ -80,6 +92,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+        setPBColor(Color.BLUE);
     }
 
     private boolean validateInfo() {
@@ -126,10 +139,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             regLogin();
                         } else {
-                            // If sign in fails, display a message to the user.
-                            //todo use toast function
-                            Toast.makeText(LoginActivity.this, "Authentication failed. Try Again",
-                                    Toast.LENGTH_SHORT).show();
+                            makeToast(LoginActivity.this, "Authentication failed. Try Again");
                         }
                     }catch (Exception e){
                         makeToast(getApplicationContext(),"At signInWithEmailAndPassword: "+e.toString());
@@ -168,14 +178,11 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-//    private void saveToSharedPref(String userEmail){
-//        SharedPreferences sharedPreferences = getSharedPreferences(
-//                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-//
-//        SharedPreferences.Editor editor = sharedPreferences.edit();
-//        editor.putString("email", userEmail);
-//        editor.apply();
-//    }
+    private void setPBColor(int color){
+        Drawable progressDrawable = loginPB.getIndeterminateDrawable().mutate();
+        progressDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+        loginPB.setProgressDrawable(progressDrawable);
+    }
     private void goToMyPets(){
         Intent intent = new Intent(LoginActivity.this, MyPetsActivity.class);
         startActivity(intent);
@@ -205,6 +212,7 @@ public class LoginActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     makeToast(getApplicationContext(), "Please make sure you register first");
                 }
+                loginPB.setVisibility(View.GONE);
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {

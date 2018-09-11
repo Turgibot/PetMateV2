@@ -104,6 +104,8 @@ public class MatchFinderActivity extends Activity{
         flingContainer.setVisibility(View.INVISIBLE);
         flingContainer.setAdapter(petAdapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
+
+            //for each swipe do
             @Override
             public void removeFirstObjectInAdapter() {
                 viewedUser = userList.get(0);
@@ -122,6 +124,7 @@ public class MatchFinderActivity extends Activity{
 
             @Override
             public void onLeftCardExit(Object dataObject) {
+                //do nothing
             }
 
             @Override
@@ -147,12 +150,10 @@ public class MatchFinderActivity extends Activity{
             }
 
             @Override
-            public void onAdapterAboutToEmpty(int itemsInAdapter) {
-            }
+            public void onAdapterAboutToEmpty(int itemsInAdapter) {}
 
             @Override
-            public void onScroll(float scrollProgressPercent) {
-            }
+            public void onScroll(float scrollProgressPercent) {}
         });
 
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -316,7 +317,7 @@ public class MatchFinderActivity extends Activity{
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                makeToast(getApplicationContext(), "Error at removeLike"+ databaseError.getMessage());
             }
         });
 
